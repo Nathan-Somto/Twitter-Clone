@@ -1,38 +1,79 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+<div align="center">
+<img src='./public/Logo.png' height='50' width="50"/>
 
-## Getting Started
+# Fullstack Twitter Web Clone
 
-First, run the development server:
+</div>
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
+A Fullstack Twitter web app clone built with the MERN stack and Next js as the full stack frame work.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Reason For Project
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+I wanted to challenge myself and see how long it would take me to create and complete a full stack project. initially i wanted to use firebase as the backend but i felt that would have been a cheap and easy way out.
+**Why I did not use the App router ?**
+1. Most Next js codebases are still in the Page Router, so it pays to soildify your knowledge in the workings of the page router.
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+2. My laptop is too slow for the App router some how. if you really want this project to be in the App router here is a challenge for you rewrite the codebase.
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+## Features
+- authentication
+- user profile creation
+- creation and deletion of tweets
+- image upload functionality for tweets
+- retweeting
+- adding comments to tweets.
+- replying commments to tweets.
+- user profile search
+- bookmarking tweets
+- liking tweets
+- personalized tweet feed.
+- setting tweet status
+- follow user  functionality
+- user follow suggestions
+- custom api [ Swagger Docs](https://swagger/blahblah)
 
-## Learn More
+## Screen Shots
+[Figma file link](https://www.figma.com)
 
-To learn more about Next.js, take a look at the following resources:
+### Home Page
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Tweet Details Page
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+### User Profile Page
 
-## Deploy on Vercel
+### Bookmark Page
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Search Page
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+### Onboarding Page
+
+## Tech Stack
+
+### Front End
+- React
+- Shadcn Ui
+- Tailwind Css
+- React Query
+- Framer Motion
+- Next js
+- React Toastify
+
+### Back End
+- Clerk
+- Uploadthing
+- Node js runtime
+- Mongoose
+- Next js
+- Zod
+- Mongodb Atlas
+
+## Enviroment Variables
+
+## Installation
+
+## Issue Guidelines
+
+## Contributors
+
+[Nathan Somto](https://www.github.com/Nathan-Somto)

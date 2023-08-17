@@ -1,0 +1,222 @@
+[
+  {
+    "_id": "1",
+    "author": {
+      "username": "user1",
+      "_id": "user1_id",
+      "profileImgUrl": "/dummy/avatar-1.jpg"
+    },
+    "text": "This is the first tweet!",
+    "createdAt": "2023-08-11T10:00:00Z",
+    "isRetweet": false,
+    "likes": [],
+    "imgUrls": ["/dummy/avatar-2.jpg"],
+    "comments": [
+      {
+        "_id": "commenter1_id",
+        "author": {
+          "username": "commenter1",
+          "_id": "commenter1_id",
+          "profileImgUrl": "/dummy/avatar-2.jpg"
+        },
+        "text": "Great tweet!",
+        "createdAt": "2023-08-11T10:30:00Z",
+        "tweetId": "1",
+        "replies": [
+          {
+            "author": {
+              "username": "reply1",
+              "_id": "reply1_id",
+              "profileImgUrl": "/dummy/avatar-3.jpg"
+            },
+            "text": "Thanks!",
+            "createdAt": "2023-08-11T11:00:00Z",
+            "tweetId": "1",
+            "parentComment": "commenter1_id",
+            "_id": "reply1_id"
+          },
+          {
+            "author": {
+              "username": "reply2",
+              "_id": "reply2_id",
+              "profileImgUrl": "/dummy/avatar-4.jpg"
+            },
+            "text": "I agree with commenter1!",
+            "createdAt": "2023-08-11T11:30:00Z",
+            "tweetId": "1",
+            "parentComment": "commenter1_id",
+            "_id": "reply2_id"
+          }
+        ]
+      },
+      {
+        "_id": "commenter2_id",
+        "author": {
+          "username": "commenter2",
+          "_id": "commenter2_id",
+          "profileImgUrl": "/dummy/avatar-2.jpg"
+        },
+        "text": "Nice tweet!",
+        "createdAt": "2023-08-11T12:00:00Z",
+        "tweetId": "1",
+        "replies": []
+      },
+      {
+        "author": {
+          "username": "commenter3",
+          "_id": "commenter3_id",
+          "profileImgUrl": "/dummy/avatar-3.jpg"
+        },
+        "text": "I enjoyed reading this.",
+        "createdAt": "2023-08-11T12:30:00Z",
+        "tweetId": "1",
+        "replies": [],
+        "_id": "commenter3_id"
+      },
+      {
+        "_id": "commenter4_id",
+        "author": {
+          "username": "commenter4",
+          "_id": "commenter4_id",
+          "profileImgUrl": "/dummy/avatar-4.jpg"
+        },
+        "text": "Keep it up!",
+        "createdAt": "2023-08-11T13:00:00Z",
+        "tweetId": "1",
+        "replies": []
+      },
+      {
+        "author": {
+          "username": "commenter5",
+          "_id": "commenter5_id",
+          "profileImgUrl": "/dummy/avatar-2.jpg"
+        },
+        "text": "Nice tweet!",
+        "createdAt": "2023-08-11T10:45:00Z",
+        "tweetId": "2",
+        "replies": [],
+        "_id": "commenter5_id"
+      },
+      {
+        "author": {
+          "username": "commenter6",
+          "_id": "commenter6_id",
+          "profileImgUrl": "/dummy/avatar-3.jpg"
+        },
+        "text": "I agree!",
+        "createdAt": "2023-08-11T11:15:00Z",
+        "tweetId": "2",
+        "replies": [],
+        "_id": "commenter6_id"
+      },
+      {
+        "author": {
+          "username": "commenter7",
+          "_id": "commenter7_id",
+          "profileImgUrl": "/dummy/avatar-4.jpg"
+        },
+        "text": "Hello world!",
+        "createdAt": "2023-08-11T11:45:00Z",
+        "tweetId": "2",
+        "replies": [],
+         "_id": "commenter7_id"
+      },
+      {
+        "author": {
+          "username": "commenter8",
+          "_id": "commenter8_id",
+          "profileImgUrl": "/dummy/avatar-1.jpg"
+        },
+        "text": "Keep tweeting!",
+        "createdAt": "2023-08-11T12:15:00Z",
+        "tweetId": "2",
+        "replies": [],
+        "_id": "commenter8_id"
+      }
+    ],
+    "tweetScore": 10,
+    "retweets": []
+  },
+  {
+    "_id": "2",
+    "author": {
+      "username": "user2",
+      "_id": "user2_id",
+      "profileImgUrl": "/dummy/avatar-2.jpg"
+    },
+    "text": "Hello Twitter!",
+    "createdAt": "2023-08-11T10:15:00Z",
+    "isRetweet": false,
+    "likes": [],
+    "imgUrls": ["/dummy/avatar-1.jpg"],
+    "comments": [
+    ],
+    "tweetScore": 20,
+    "retweets": []
+  },
+    {
+      "_id": "3",
+      "author": {
+        "username": "@user3",
+        "_id": "user3_id",
+        "profileImgUrl":"/dummy/avatar-3.jpg"
+      },
+      "text": "Just had a delicious and satisfying meal at my favorite restaurant! The flavors were incredible, and the presentation was top-notch. It's moments like these that make life so enjoyable. 😋🍽️ #FoodieLife #DeliciousDining",
+      "createdAt": "2023-08-11T11:30:00Z",
+      "isRetweet": false,
+      "likes": [],
+      "imgUrls": [],
+      "comments": [],
+      "tweetScore": 15,
+      "retweets": []
+    },
+    {
+      "_id": "4",
+      "author": {
+        "username": "user4",
+        "_id": "user4_id",
+        "profileImgUrl":"/dummy/avatar-4.jpg"
+      },
+      "text": "Retweeting this awesome tweet!",
+      "createdAt": "2023-08-11T12:45:00Z",
+      "isRetweet": true,
+      "likes": [],
+      "imgUrls": [],
+      "comments": [],
+      "tweetScore": 30,
+      "retweets": []
+    },
+    {
+      "_id": "5",
+      "author": {
+        "username": "user5",
+        "_id": "user5_id",
+        "profileImgUrl":"/dummy/avatar-2.jpg"
+      },
+      "text": "Embracing the world of code and programming all day long! 🖥️💻 It's amazing how lines of code can bring ideas to life and solve complex problems. Whether it's front-end design or back-end logic, I'm immersed in the world of technology. #CodeIsArt #ProgrammingPassion",
+      "createdAt": "2023-08-11T13:00:00Z",
+      "isRetweet": false,
+      "likes": [],
+      "imgUrls": [],
+      "comments": [],
+      "tweetScore": 25,
+      "retweets": []
+    },
+    {
+      "_id": "6",
+      "author": {
+        "username": "user6",
+        "_id": "user6_id",
+        "profileImgUrl":"/dummy/avatar-3.jpg"
+      },
+      "text": "Just posted a new blog.",
+      "createdAt": "2023-08-11T14:20:00Z",
+      "isRetweet": false,
+      "likes": [],
+      "imgUrls": [],
+      "comments": [],
+      "tweetScore": 18,
+      "retweets": []
+    }
+  ]
+  

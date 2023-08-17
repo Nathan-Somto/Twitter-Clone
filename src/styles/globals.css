@@ -2,26 +2,106 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
+@layer components {
+  .rightsidebar {
+    @apply fixed bottom-0 md:relative left-0 md:bottom-auto w-full md:top-0 z-20 flex h-[60px] border-t border-t-light3 dark:border-t-dark4 border-r-transparent md:border-t-transparent md:h-screen  flex-col justify-between md:gap-12 overflow-auto border-r md:border-r-light3 dark:md:border-r-dark4 dark:bg-primaryBlack bg-primaryWhite px-5 py-2 md:px-5 lg:px-10 md:py-6;
   }
-}
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  .no-focus {
+    @apply focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 !important;
+  }
+
+  /* Account Profile  */
+
+
+  .account-form_input {
+    @apply border dark:border-dark4 dark:bg-dark2 text-light2 placeholder:text-light3 py-3 px-4  rounded-lg !important;
+  }
+  .h1-bold {
+    @apply text-[36px] font-bold leading-[140%];
+  }
+
+  .h1-semibold {
+    @apply text-[36px] font-semibold leading-[140%];
+  }
+
+  .h2-bold {
+    @apply text-[30px] font-bold leading-[140%];
+  }
+
+  .h2-semibold {
+    @apply text-[30px] font-semibold leading-[140%] !important;
+  }
+
+  .h3-semibold {
+    @apply text-[24px] font-semibold leading-[140%];
+  }
+
+  .h4-medium {
+    @apply text-[20px] font-medium leading-[140%] !important;
+  }
+
+  .body-bold {
+    @apply text-[18px] font-bold leading-[140%];
+  }
+
+  .body-semibold {
+    @apply text-[18px] font-semibold leading-[140%];
+  }
+
+  .body-medium {
+    @apply text-[18px] font-medium leading-[140%];
+  }
+
+  .body-normal {
+    @apply text-[18px] font-normal leading-[140%];
+  }
+
+  .body1-bold {
+    @apply text-[18px] font-bold leading-[140%];
+  }
+
+  .base-regular {
+    @apply text-[16px] font-normal leading-[140%];
+  }
+
+  .base-medium {
+    @apply text-[16px] font-medium leading-[140%] !important;
+  }
+
+  .base-semibold {
+    @apply text-[16px] font-semibold leading-[140%];
+  }
+
+  .base-bold {
+    @apply text-[16px] font-bold leading-[140%];
+  }
+
+  .small-regular {
+    @apply text-[14px] font-normal leading-[140%];
+  }
+
+  .small-medium {
+    @apply text-[14px] font-medium leading-[140%];
+  }
+
+  .small-semibold {
+    @apply text-[14px] font-semibold leading-[140%];
+  }
+
+  .subtle-medium {
+    @apply text-[12px] font-medium leading-[16px];
+  }
+
+  .subtle-semibold {
+    @apply text-[12px] font-semibold leading-[16px];
+  }
+
+  .tiny-medium {
+    @apply text-[10px] font-medium leading-[140%];
+  }
+
+  .xs-semibold {
+    @apply text-[7px] font-semibold leading-[9.318px];
+  }
 }
