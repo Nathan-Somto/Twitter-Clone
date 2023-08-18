@@ -14,5 +14,5 @@ const UserSchema = new mongoose.Schema({
   displayName: { type: String },
   isVerified: { type: Boolean, default: false },
 });
-
-export default  mongoose.model("users", UserSchema);
+const User = mongoose.models.users || mongoose.model("users", UserSchema)
+export default  User ;

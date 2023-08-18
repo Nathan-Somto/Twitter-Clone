@@ -11,6 +11,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { signIn } from "next-auth/react";
+import { toast } from "@/components/ui/use-toast";
+import Loader from "@/components/ui/loader";
 
 function SigninPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -18,7 +21,17 @@ function SigninPage() {
   async function handleSignIn() {
     setIsLoading(true);
     try {
+      await signIn('google');
     } catch (err) {
+      let message = "Failed to Authenticate."
+      if(err instanceof Error){
+        message = err.message
+      }
+      toast({
+        title: "Error While Authenticating",
+        description: message,
+        
+      })
     } finally {
       setIsLoading(false);
     }
@@ -45,6 +58,9 @@ function SigninPage() {
           onClick={handleSignIn}
           className="w-3/4 mt-5 mb-3  !bg-light3 shadow-xl rounded-full hover:opacity-50"
         >
+          {isLoading ?(
+            <Loader size="sm"/>
+          ):(
           <>
             <Image
               src={"/google.svg"}
@@ -57,6 +73,7 @@ function SigninPage() {
               Sign up with Google
             </span>
           </>
+          )}
         </Button>
         <AlertDialog>
           <AlertDialogTrigger className="opacity-80 small-medium">

@@ -1,63 +1,92 @@
-import NextAuth, { NextAuthOptions,User } from "next-auth"
+import NextAuth, {Awaitable, DefaultSession, NextAuthOptions,User } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 import userModel from "@/lib/models/user.model";
 import connectDb from "@/lib/config/connectDb";
 import generateUsername from "@/lib/utils/generateUsername"
+import { JWT } from "next-auth/jwt";
+import {CustomSession} from '@/types'
 
 
-interface CustomNextAuthUser extends User {
-  onBoarded?: boolean;
-  username?: string;
+// custom params to have extended session data.
+type Params = {
+  session: CustomSession;
+  token: JWT;
+  user: User;
+} & {
+  newSession: any;
+  trigger: "update";
 }
-
 
 
 export const authOptions:NextAuthOptions = {
     pages:{
         signIn: "/sign-in",
-        newUser:"/onboarding"
+        newUser:"/onboarding",
+        signOut: "/sign-in",
+
     },
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID  as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      checks: ["none"],
     })
   ],
   callbacks: {
-    async signIn({user})
-    {
+    async session({session, token}:Params): Promise<CustomSession | DefaultSession> {
+      // called whenever we use the useSession hook gets data from the token
+      if(!session.user) return session;
+      if(token){
+        session.user.id = token.id as unknown as  string;
+        session.user.username = token.username as unknown as  string
+        session.user.onBoarded = token.onBoarded as unknown as boolean
+        session.user.image = token.image  as unknown as string
+      }
+      return session;
+    },
+    async jwt({ token, user }) {
+      // creates the jwt called during the sign in process.
+      if (user) {
         connectDb();
         const existingUser = await userModel.findOne({ email: user.email });
+        // checks if we have an existing user then prefill content.
         if (existingUser) {
-            user.id = existingUser._id as unknown as string; 
-            // if we have a user and not onboarded create a username and redirect to onboarding
-            if(!existingUser.onBoarded){
-                existingUser.username = generateUsername(user.name as string);
-                (user as CustomNextAuthUser).username = existingUser.username;
-                return "/onboarding";
-            }
-            return true; 
+          token.id = existingUser._id.toString();
+          token.username = existingUser.username;
+          token.onBoarded = existingUser.onBoarded
+          token.image = existingUser.profileImgUrl;
         } else {
-            // Create the new user in your database
-            const newUser = await userModel.create({
-                email: user.email,
-                onBoarded: false,
-                profileImgUrl: user.image,
-                displayName:user.name,
-                username: generateUsername(user.name  as string),
-            });
-            user.id = newUser._id  as unknown as string; 
-            (user as CustomNextAuthUser).username= newUser.username;
-            return "/onboarding"; 
+          // creates user in mongodb and then prefills content
+          const newUser = await userModel.create({
+            email: user.email,
+            onBoarded: false,
+            profileImgUrl: user.image,
+            displayName: user.name,
+            username: generateUsername(user.name as string),
+          });
+
+          token.id = newUser._id.toString();
+          token.username = newUser.username;
+          token.onBoarded = false;
+          token.image = newUser.profileImgUrl;
         }
+      }
+
+      return token;
+    },
+    redirect({ url, baseUrl }) {
+      return "/home";
     },
     },
     session: {
-        strategy: 'jwt'
-    },
-    jwt: {
-      secret: process.env.JWT_SECRET as string, // Specify your JWT secret here
-    }
-}
+      strategy: 'jwt'
+  },
+  jwt: {
+    secret: process.env.JWT_SECRET as string
+  },
+  }
+  
+  
+
 
 export default NextAuth(authOptions)

@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'
+import {Session} from 'next-auth'
 interface IUser {
     username: string,
     email:string,
@@ -33,4 +34,14 @@ interface IComment {
     parentComment?: mongoose.Types.ObjectId,
     replies: mongoose.Types.ObjectId[]
 }
-export {IUser, ITweet, IComment}
+interface CustomSession extends Session {
+    user?:{
+    onBoarded?: boolean | null;
+    username?: string | null;
+    id?: string | null; 
+    name?: string | null | undefined; 
+    email?: string | null | undefined; 
+    image?: string | null | undefined;
+   } | undefined
+}
+export {IUser, ITweet, IComment, CustomSession}
