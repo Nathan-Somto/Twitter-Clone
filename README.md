@@ -52,21 +52,21 @@ I wanted to challenge myself and see how long it would take me to create and com
 
 ### Front End
 - React
-- Shadcn Ui
-- Tailwind Css
-- React Query
+- Shadcn Ui (Ui Library)
+- Tailwind Css (Css Framework)
 - Framer Motion
 - Next js
-- React Toastify
+- Context Api (May use redux not Sure yet)
+
 
 ### Back End
-- Clerk
-- Uploadthing
+-  Next Auth (Authentication Handler)
+- Uploadthing (Media Uploader)
 - Node js runtime
-- Mongoose
-- Next js
-- Zod
-- Mongodb Atlas
+- Mongoose (Object Data Modeler)
+- Next js (Full Stack Meta Framework)
+- Zod (Schema Validator)
+- Mongodb (NoSql Database)
 
 ## Enviroment Variables
 
