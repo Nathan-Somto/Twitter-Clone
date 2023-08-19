@@ -50,5 +50,5 @@ tweetScore: {
     required: true
 }
 });
-
-export default mongoose.model("tweets", TweetSchema);
+const Tweets = mongoose.models.tweets ||  mongoose.model("tweets", TweetSchema);
+export default Tweets

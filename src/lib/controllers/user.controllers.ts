@@ -11,7 +11,7 @@ import { IUser } from "@/types";
  */
 const get_user_profile = async (userId: Types.ObjectId) => {
   try{
-    const user = await User.findOne({ id: userId })
+    const user = await User.findOne({ _id: userId })
       .populate("followers", "username, _id")
       .populate("following", "username, _id")
       .select("-email");
@@ -317,7 +317,7 @@ const update_user_profile = async (
 ) => {
   try{
     // validate the user Payload before calling this function
-    const foundUser = await User.findById({ id: userId }).select('bio, email, username, profileImgUrl, profileCoverUrl');
+    const foundUser = await User.findById( userId ).select('bio, email, username, profileImgUrl, profileCoverUrl');
     if (!foundUser)
       return {
         status: "failed",

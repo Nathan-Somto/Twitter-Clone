@@ -44,9 +44,21 @@ export const authOptions:NextAuthOptions = {
       }
       return session;
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
+      // called when we want to update the session object client side.
+      if(trigger === 'update' && session){
+        if(typeof session?.username === 'string'){
+          token.username = session.username || '';
+        }
+        if(typeof session?.image === 'string'){
+          token.image = session.image || '';
+        }
+        if(typeof session?.onBoarded === 'boolean'){
+          token.onBoarded = session.onBoarded || false
+        }
+      }
       // creates the jwt called during the sign in process.
-      if (user) {
+      if (user && trigger === 'signIn') {
         connectDb();
         const existingUser = await userModel.findOne({ email: user.email });
         // checks if we have an existing user then prefill content.

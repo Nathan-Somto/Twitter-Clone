@@ -45,7 +45,7 @@ function SigninPage() {
             alt="twitter logo"
             fill
             priority
-            className="object-cover"
+            className="object-contain"
           />
         </figure>
         <h1 className="font-semibold mb-9 text-[35px] md:text-[40px] lg:text-[50px]">

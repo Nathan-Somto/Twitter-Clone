@@ -3,7 +3,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import ProfileBox from "../ProfileBox";
+import { useSession } from "next-auth/react";
+import { CustomSession } from "@/types";
 function RightSideBar() {
+  const {data: session} = useSession();
   return (
     <nav className="rightsidebar md:max-w-[275px]">
       <ul className=" flex items-center lg:items-start relative gap-[4px] md:flex-col justify-between md:px-[8px] md:justify-center md:gap-[24px] lg:px-[24px] ">
@@ -35,7 +38,7 @@ function RightSideBar() {
         </li>
         <li>
           <Link
-            href={"/search?searchTerm=''"}
+            href={"/search?searchTerm="}
             className="flex gap-[8px]  group items-center dark:text-primaryWhite text-primaryBlack body-bold"
           >
             <svg
@@ -56,7 +59,7 @@ function RightSideBar() {
         </li>
         <li>
           <Link
-            href={"/bookmark/1234"}
+            href={`/bookmark/${(session as CustomSession)?.user?.id}`}
             className="flex gap-[8px] group items-center dark:text-primaryWhite text-primaryBlack body-bold"
           >
             <svg
@@ -78,7 +81,7 @@ function RightSideBar() {
         </li>
         <li>
           <Link
-            href={"/profile/1234"}
+            href={`/profile/${(session as CustomSession)?.user?.id}`}
             className="flex gap-[8px] group  items-center dark:text-primaryWhite text-primaryBlack body-bold"
           >
             <svg
@@ -212,7 +215,11 @@ function RightSideBar() {
           </svg>
         </Button>
       </ul>
-      <ProfileBox/>
+      <ProfileBox user={{
+        displayName: (session as CustomSession)?.user?.name ?? 'no name',
+        username: (session as CustomSession)?.user?.username ?? 'no username',
+        profileImgUrl:  (session as CustomSession)?.user?.image ?? void 0
+      }}/>
     </nav>
   );
 }

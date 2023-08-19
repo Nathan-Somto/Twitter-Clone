@@ -9,7 +9,7 @@ export default function OnBoardingPage() {
   const {data: session, status} = useSession()
   const router = useRouter()
   if (status === 'loading') {
-    return <div className="dark:primaryBlack h-screen grid place-items-center">
+    return <div className="dark:bg-primaryBlack h-screen grid place-items-center">
       <Loader size="lg"/>    
       </div>
   }
@@ -17,11 +17,13 @@ export default function OnBoardingPage() {
  if(!session){
   router.push('/sign-in');
  }
-  console.log(session?.user)
+  
   // if user has onboarded go to home page
   if((session  as CustomSession)?.user?.onBoarded){
     router.push('/home');
   }
+  // the bio and profileCover should always be empty because it is assumed when you haven't onBoarded you dont have the data.
+  // for edit profile it will be prefilled because we fetch data Server Side
   const user = {
     id: (session  as CustomSession)?.user?.id ?? '',
     bio: '',
@@ -34,7 +36,7 @@ export default function OnBoardingPage() {
     <>
       <nav className="w-full py-4 px-8 mx-auto dark:bg-primaryBlack bg-light3 dark:text-light2 text-dark3">
         <figure className="h-[30px] w-[30px] hidden md:block relative">
-          <Image src={"/Logo.png"} alt="twitter logo" fill />
+          <Image src={"/Logo.png"} alt="twitter logo" fill className="object-contain" />
         </figure>
       </nav>
       <AccountProfile

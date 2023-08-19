@@ -26,7 +26,7 @@ export default async function handler(
         const response = await get_user_profile(userId as mongoose.Types.ObjectId);
         return res.status(200).json(response)
       case "PUT":
-        const { bio, profileImgUrl, profileCoverUrl, displayName, onBoarded } =
+        const { bio, profileImgUrl, profileCoverUrl, displayName, onBoarded,username } =
           req.body;
         const validationResult = UserValidation.safeParse({
           bio,
@@ -34,6 +34,7 @@ export default async function handler(
           profileCoverUrl,
           displayName,
           onBoarded,
+          username
         });
         if (!validationResult.success) {
           return res.status(200).json(validationResult.error);
