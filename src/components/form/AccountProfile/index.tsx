@@ -83,10 +83,8 @@ export default  function AccountProfile ({
           files: filesToUpload,
         })) as UploadFileResponse[];
       }
-      console.log(imgUrls);
       // go through the images get thier urls.
       imgUrls.forEach((img) => {
-        console.log(img);
         if (img.name.includes("profileImg")) {
           values.profileImgUrl = img.url;
         } else {
@@ -119,6 +117,7 @@ export default  function AccountProfile ({
         toast({
           title: "failed to update",
           description: err.message,
+          variant:"destructive"
         });
         console.log(err.message);
       }

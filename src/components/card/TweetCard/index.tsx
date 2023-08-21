@@ -1,21 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-interface Props {
-  _id: string;
-  author: {
-    username: string;
-    _id: string;
-    profileImgUrl?: string;
-  };
-  text: string;
-  createdAt: string;
-  isRetweet: boolean;
-  likes: string[];
-  imgUrls: string[];
-  comments: string[];
-  tweetScore: number;
-  retweets: string[];
+import { Tweet } from "@/features/tweets/tweetsSlice";
+interface Props  extends Tweet {
   isTweetPage:boolean;
 }
 

@@ -2,22 +2,30 @@ import {
   Form,
   FormControl,
   FormItem,
-  FormLabel,
   FormMessage,
   FormField,
 } from "@/components/ui/form";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import TweetValidation from "@/lib/validations/tweet";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useForm } from "react-hook-form";
-import React, { useState, useRef, ChangeEvent } from "react";
+import React, { useState, useRef, ChangeEvent,useCallback, useTransition } from "react";
 import dynamic from "next/dynamic";
 import { EmojiClickData, EmojiStyle } from "emoji-picker-react";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
+import { CustomSession } from "@/types";
+import { toast } from "@/components/ui/use-toast";
+import { uploadFiles } from "@/utils";
+import axios from "axios";
+import Loader from "@/components/ui/loader";
+import { useDispatch } from "react-redux";
+import { Tweet, addNewTweet } from "@/features/tweets/tweetsSlice";
 
+
+// to avoid server rendering
 const EmojiPicker = dynamic(
   () => {
     return import("emoji-picker-react");
@@ -25,48 +33,113 @@ const EmojiPicker = dynamic(
   { ssr: false }
 );
 
-type Props = {};
 
-function TweetBox({}: Props) {
-  const [textAreaValue, setTextAreaValue] = useState<string>("");
+
+function TweetBox() {
+  const dispatch = useDispatch();
+  const { data: session } = useSession();
+  const [isPending, startTransition] = useTransition()
   const [showEmojiPicker, setEmojiPicker] = useState<boolean>(false);
-  const [emojiPickerObject, setEmojiPickerObject] =
-    useState<EmojiClickData | null>(null);
-  const [imgUrl, setImgUrl] = useState<string>();
+  const [status, setStatus] = useState<string>('');
+  const [emojiPickerObject, setEmojiPickerObject] = useState<EmojiClickData | null>(null);
+  const [imgUrl, setImgUrl] = useState<string>("");
+  const [imgFile, setImgFile] = useState<File[]>([]);
   const imgRef = useRef<HTMLInputElement | null>(null);
-  const [ status, setStatus] = useState('')
+  const [isLoading, setIsLoading] = useState(false);
   const form = useForm<z.infer<typeof TweetValidation>>({
     resolver: zodResolver(TweetValidation),
     defaultValues: {
-      text: "",
-      author: "",
+      text: '',
+      author: (session as CustomSession)?.user?.id ?? "1234",
+      isPublic: true,
+      isRetweet: false,
+      imgUrls: [],
     },
   });
-  const onSubmit = async (values: z.infer<typeof TweetValidation>) => {
-    console.log(values);
-    const isPublic = status === 'Everyone' ? true: false;
-  };
-  function handleChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
-    setTextAreaValue(e.target.value);
-  }
+ const disableButton = form.getValues('text').length < 3 || isLoading;
+  const onSubmit = useCallback(async (values: z.infer<typeof TweetValidation>) => {
+    setIsLoading(true);
+    try {
+      console.log(values);
+      // modify isPublic based on user selection.
+      const isPublic = status === "Everyone" ? true : false;
+      values.isPublic = isPublic;
+      // check if user is logged in
+      if (!(session as CustomSession)?.user?.id || values.author === "1234") {
+        throw new Error("The User must be logged in before you can tweet.");
+      }
+      // upload image to upload thing if there is.
+      let uploadedImgUrl = "";
+      if (imgFile.length) {
+        const uploadedResponse = await uploadFiles({
+          endpoint: "imageUploader",
+          files: imgFile,
+        });
+        uploadedImgUrl = uploadedResponse[0].url;
+      }
+      // get image url.
+      if (uploadedImgUrl) {
+        values.imgUrls.push(uploadedImgUrl);
+      }
+      // update the db.
+      const response = await axios.post(
+        `/api/users/${(session as CustomSession)?.user?.id}/tweet`,
+        values
+      );
+      console.log(response.data);
+      // check if successfull
+      if (response.data?.status === "failed") {
+        throw new Error("Internal Server Error");
+      }
+      if (response.data?.issues) {
+        throw new Error("Poorly formatted data.");
+      }
+
+        // get the newly created tweet add to the tweet state.
+        
+        dispatch(addNewTweet(response.data.tweet as unknown as Tweet))
+        toast({
+          description:"Successfully Created Tweet.",
+        })
+       
+    } catch (err) {
+      if (err instanceof Error) {
+        toast({
+          title: "Failed to Create Tweet",
+          description: err.message,
+          variant:"destructive"
+        });
+      }
+    }
+    finally{
+    setIsLoading(false)
+    }
+  },[dispatch, imgFile, session, status]);
   function handleEmojiClick(emojiDataObj: EmojiClickData, _: MouseEvent) {
-    const updatedValue = textAreaValue + emojiDataObj.emoji;
+    // append emoji to text area value.
+    const updatedValue = form.getValues('text') + emojiDataObj.emoji;
     setEmojiPickerObject(emojiDataObj);
-    setTextAreaValue(updatedValue);
+    form.setValue('text', updatedValue);
   }
   function toggleEmojiPicker() {
-    setEmojiPicker((prevState) => !prevState);
+    // toggle emoji appearance
+    startTransition(() => {
+      setEmojiPicker((prevState) => !prevState);
+    })
   }
   function handleImageSelect(
     e: ChangeEvent<HTMLInputElement> & { files: FileList }
   ) {
+    if (e.target.files && e.target.files.length){;
     const fileReader = new FileReader();
     fileReader.onload = function (fileEvt) {
       setImgUrl(fileEvt.target?.result as string);
     };
-    if (!e.target.files) return;
+    const file  = Array.from(e.target.files)
+    setImgFile(file);
     fileReader.readAsDataURL(e.target.files[0]);
   }
+}
   function clickFileInput() {
     if (imgRef.current !== null) {
       imgRef.current.click();
@@ -74,11 +147,14 @@ function TweetBox({}: Props) {
   }
   return (
     <Form {...form}>
-      <form   onSubmit={form.handleSubmit(onSubmit)} className="flex w-full flex-col relative gap-3 min-h-[130px] py-[10px] px-[25px]  border-b border-b-light3 dark:border-b-dark3">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="flex w-full flex-col relative gap-3 min-h-[130px] py-[10px] px-[25px]  border-b border-b-light3 dark:border-b-dark3"
+      >
         <select
           name="status"
           value={status}
-          onChange={(e)=> setStatus(e.target.value)}
+          onChange={(e) => setStatus(e.target.value)}
           className="text-primaryBlue w-[120px] rounded-full bg-light3 py-[0.15rem] px-[0.165rem] dark:bg-dark3 outline-none "
         >
           <option>Everyone</option>
@@ -91,18 +167,26 @@ function TweetBox({}: Props) {
             <FormItem>
               <FormControl className="no-focus bg-transparent text-light1">
                 <div className="flex gap-[4px]">
-                  <Avatar>
-                    <AvatarImage
-                      src="https://github.com/shadcn.png"
-                      alt="@shadcn"
-                    />
-                    <AvatarFallback>CN</AvatarFallback>
-                  </Avatar>
+                  <figure className="relative h-12 w-12 flex-shrink-0 block">
+                    {(session as CustomSession)?.user?.image ? (
+                      <Image
+                        src={(session as CustomSession)?.user?.image as string}
+                        alt="profile image"
+                        fill
+                        className="cursor-pointer rounded-full object-cover"
+                      />
+                    ) : (
+                      <Image
+                        src={"/profile.svg"}
+                        alt="profile image"
+                        fill
+                        className="cursor-pointer rounded-full object-cover"
+                      />
+                    )}
+                  </figure>
                   <Textarea
                     rows={8}
                     {...field}
-                    onChange={handleChange}
-                    value={textAreaValue}
                     className="resize-none !min-h-[60px] !text-[20px] !h-[60px] !focus-visible:border-transparent regular-medium !border-none placeholder:regular-medium !rounded-none !bg-transparent outline-none"
                     placeholder="Whats Happening?"
                   />
@@ -114,8 +198,18 @@ function TweetBox({}: Props) {
         />
         {imgUrl && (
           <figure className="h-[300px] w-[80%] rounded-[10px] relative overflow-hidden mx-auto my-[6px]">
-            <button type="button" onClick={()=> setImgUrl('')} className="absolute top-[15px] hover:opacity-50 right-[15px] bg-dark2 flex rounded-full items-center justify-center z-[2] h-8 w-8">
-              <svg viewBox="0 0 24 24" aria-hidden="true" fill="#fff" height="24" width="24">
+            <button
+              type="button"
+              onClick={() => setImgUrl("")}
+              className="absolute top-[15px] hover:opacity-50 right-[15px] bg-dark2 flex rounded-full items-center justify-center z-[2] h-8 w-8"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+                fill="#fff"
+                height="24"
+                width="24"
+              >
                 <g>
                   <path d="M10.59 12L4.54 5.96l1.42-1.42L12 10.59l6.04-6.05 1.42 1.42L13.41 12l6.05 6.04-1.42 1.42L12 13.41l-6.04 6.05-1.42-1.42L10.59 12z"></path>
                 </g>
@@ -197,8 +291,9 @@ function TweetBox({}: Props) {
             {/* Emoji btn */}
             <button
               type="button"
-              className="hover:scale-125 ease-out transition-all duration-250"
+              className="hover:scale-125 ease-out disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-250"
               onClick={toggleEmojiPicker}
+              disabled={isPending}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -252,8 +347,10 @@ function TweetBox({}: Props) {
               </svg>
             </button>
           </div>
-          <Button type="submit" className="w-[77px] h-[39px]">
-            Tweet
+          <Button type="submit" disabled={disableButton} className="w-[77px] h-[39px]">
+           <>
+           {isLoading ? (<Loader size="sm"/>): ('Tweet')}
+           </>
           </Button>
         </div>
         {showEmojiPicker && (

@@ -16,11 +16,11 @@ export default async function handler(
   res: NextApiResponse
 ) {
     try{
+        connectDb();
         const { userId, pageSize, pageNumber }: dynamicParams = req.query;
         if (!mongoose.Types.ObjectId.isValid(userId ?? "")) {
-          return res.status(400).json({ error: "Invalid userId" });
+          return res.status(400).json({status:"failed", error: "Invalid userId" });
         }
-        connectDb();
        switch(req.method){
          case 'GET':
             const getResponse = await  get_user_tweets(userId as mongoose.Types.ObjectId, pageSize, pageNumber)
@@ -38,7 +38,7 @@ export default async function handler(
                 return res.json(validationResults.error)
             }
             if(!mongoose.Types.ObjectId.isValid(validationResults.data.author)){
-                return res.status(400).json({ error: "Invalid  author" })
+                return res.status(400).json({status:"failed",  error: "Invalid  author" })
             }
             //@ts-ignore
             const postResponse =  await create_tweet(userId as mongoose.Types.ObjectId, validationResults.data)

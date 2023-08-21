@@ -30,6 +30,7 @@ function SigninPage() {
       toast({
         title: "Error While Authenticating",
         description: message,
+        variant:'destructive'
         
       })
     } finally {

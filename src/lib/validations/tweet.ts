@@ -6,7 +6,7 @@ const TweetValidation = z.object({
     isPublic: z.boolean().default(true),
     imgUrls: z.array(z.string().url()).default([]),
     originalTweetId: z.string().optional()
-}).refine((data) => data.isRetweet && data.originalTweetId === undefined,{
+})/* .refine((data) => data.isRetweet && data.originalTweetId === undefined,{
     message: 'when isRetweet is true originalTweetId is required.'
-})
+}) */
 export default  TweetValidation

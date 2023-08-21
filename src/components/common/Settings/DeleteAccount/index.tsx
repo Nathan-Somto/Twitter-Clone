@@ -27,7 +27,7 @@ function DeleteAccount({}: Props) {
         </p>
       </div>
       <AlertDialog>
-        <AlertDialogTrigger>
+        <AlertDialogTrigger asChild>
           <Button size="icon" className="bg-red-700">
             <svg
               xmlns="http://www.w3.org/2000/svg"

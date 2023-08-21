@@ -1,23 +1,29 @@
 import mongoose from 'mongoose'
-let connected = false;
-const connectionUrl = process.env.MONGO_URL;
 
+const connectionUrl = process.env.MONGO_URL;
+let cached = global.mongoose;
+if(!cached){
+    global.mongoose = {connection:null, promise: null};
+    cached = global.mongoose
+}
 const connectDb = async () => 
 {
     console.log('in connect db')
-    console.log(connectionUrl)
     try{
         if(!connectionUrl){
             throw new Error('no provided connection url')
         }
-        if(!connected){
-            await mongoose.connect(connectionUrl)
-            connected = true;
-            console.log("Successfully connected to mongo db.")
+        if(cached.connection){
+            console.log("Cached mongodb")
+            return cached.connection;
         }
+        if(!cached.promise){
+           cached.promise = await mongoose.connect(connectionUrl,{bufferCommands: false})
+           console.log("Successfully connected to mongo db.")
+        }
+        cached.connection = await cached.promise;
     }
     catch(err){
-        connected = false;
         if(err instanceof Error){
             console.error(err.message)
         }

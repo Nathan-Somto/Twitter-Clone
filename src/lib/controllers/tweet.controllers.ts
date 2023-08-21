@@ -15,7 +15,7 @@ import calculateTweetScore from "../utils/calculateTweetScore";
 const create_tweet = async (userId: Types.ObjectId, tweetData: Pick<ITweet, 'text' | 'author' | 'imgUrls' | 'isPublic' | 'isRetweet'>) => {
   // validation is done before tweetData is passed to function.
   try {
-    const user = await User.findById({ id: userId });
+    const user = await User.findById(userId);
     if (!user) {
       return {
         status: "failed",
@@ -29,9 +29,18 @@ const create_tweet = async (userId: Types.ObjectId, tweetData: Pick<ITweet, 'tex
     await user.save();
     return {
       status: "success",
-      tweet,
+     tweet:{
+      ...tweet._doc,
+      author:{
+        username: user.username,
+        profileImgUrl: user.profileImgUrl,
+        _id: user._id
+      },
+
+     }
     };
   } catch (err) {
+    console.error((err as unknown  as Error)?.message)
     return {
       status: "failed",
       message: "failed to create tweet.",

@@ -1,4 +1,3 @@
-import { useTheme } from "@/context/themeContext";
 import React from "react";
 import {
   DropdownMenu,
@@ -7,6 +6,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { useDispatch, useSelector } from "react-redux";
+import { Theme, setTheme, theme } from "@/features/theme/themeSlice";
 type Props = {};
 function Svg({ size, type }: { size: number; type: "moon" | "sun" }) {
   return (
@@ -51,19 +52,13 @@ function Svg({ size, type }: { size: number; type: "moon" | "sun" }) {
   );
 }
 function ThemeChanger({}: Props) {
-  const { theme, setTheme } = useTheme();
-  function toggleTheme(themeValue: typeof theme) {
-    const html = document.querySelector("html");
-    if (!html) return;
-    if (html.classList.contains("dark") && themeValue === "dark") {
-      html.className = "";
-      setTheme("light");
-      localStorage.setItem("theme", "light");
-      return;
+  const dispatch = useDispatch();
+  //@ts-ignore
+  const {theme: currentTheme} = useSelector(theme);
+  function themeChange(themeValue: Theme) {
+    if (currentTheme !== themeValue) {
+      dispatch(setTheme(themeValue));
     }
-    html.className = "dark";
-    setTheme("dark");
-    localStorage.setItem("theme", "dark");
   }
   return (
     <div className="flex justify-between">
@@ -74,18 +69,25 @@ function ThemeChanger({}: Props) {
         </p>
       </div>
       <DropdownMenu>
-        <DropdownMenuTrigger >
-          <Button size="icon" className="dark:!bg-dark2 bg-light3">
-            <Svg size={25} type={`${theme === "dark" ? "moon" : "sun"}`} />
+        <DropdownMenuTrigger asChild>
+          <Button
+            size="icon"
+            className="dark:!bg-dark2 bg-light3 !outline-none"
+          >
+            {currentTheme === "dark" ? (
+              <Svg size={25} type={`moon`} />
+            ) : (
+              <Svg size={25} type={`sun`} />
+            )}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          <DropdownMenuItem onClick={() => toggleTheme("light")}>
+          <DropdownMenuItem onClick={() => themeChange("dark")}>
             <>
-              <Svg size={18} type="moon" /> <span className="ml-2" >Dark</span>
+              <Svg size={18} type="moon" /> <span className="ml-2">Dark</span>
             </>
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => toggleTheme("dark")}>
+          <DropdownMenuItem onClick={() => themeChange("light")}>
             <>
               <Svg size={18} type="sun" /> <span className="ml-2">Light</span>
             </>
