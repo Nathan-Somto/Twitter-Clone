@@ -5,18 +5,20 @@ import { Button } from "@/components/ui/button";
 import ProfileBox from "../ProfileBox";
 import { useSession } from "next-auth/react";
 import { CustomSession } from "@/types";
+import Tooltip from "@/components/ui/tooltip";
 function RightSideBar() {
-  const {data: session} = useSession();
+  const { data: session } = useSession();
+
   return (
-    <nav className="rightsidebar md:max-w-[275px]">
+    <nav className="sidebar md:max-w-[275px]">
       <ul className=" flex items-center lg:items-start relative gap-[4px] md:flex-col justify-between md:px-[8px] md:justify-center md:gap-[24px] lg:px-[24px] ">
         <figure className="h-[25px] w-[25px] hidden md:block relative">
-          <Image src={"/Logo.png"} alt="twitter logo" fill />
+          <Image src={"/Logo.png"} alt="twitter logo" fill className="object-contain" />
         </figure>
         <li>
           <Link
             href={"/home"}
-            className="flex gap-[8px] group  items-center dark:text-primaryWhite text-primaryBlack body-bold"
+            className="flex flex-col lg:flex-row  relative gap-1 md:gap-[8px] group items-center dark:text-primaryWhite text-primaryBlack body-bold"
           >
             <span>
               <svg
@@ -31,15 +33,16 @@ function RightSideBar() {
                 </g>
               </svg>
             </span>
-            <span className="group-hover:text-primaryBlue hidden lg:inline">
+            <span className="group-hover:text-primaryBlue max-md:tiny-medium md:hidden lg:inline">
               Home{" "}
             </span>
+            <Tooltip className="md:block hidden lg:hidden">Home</Tooltip>
           </Link>
         </li>
         <li>
           <Link
             href={"/search?searchTerm="}
-            className="flex gap-[8px]  group items-center dark:text-primaryWhite text-primaryBlack body-bold"
+            className="flex flex-col lg:flex-row relative gap-1 md:gap-[8px] group items-center dark:text-primaryWhite text-primaryBlack body-bold"
           >
             <svg
               viewBox="0 0 24 24"
@@ -52,15 +55,16 @@ function RightSideBar() {
                 <path d="M10.25 3.75c-3.59 0-6.5 2.91-6.5 6.5s2.91 6.5 6.5 6.5c1.795 0 3.419-.726 4.596-1.904 1.178-1.177 1.904-2.801 1.904-4.596 0-3.59-2.91-6.5-6.5-6.5zm-8.5 6.5c0-4.694 3.806-8.5 8.5-8.5s8.5 3.806 8.5 8.5c0 1.986-.682 3.815-1.824 5.262l4.781 4.781-1.414 1.414-4.781-4.781c-1.447 1.142-3.276 1.824-5.262 1.824-4.694 0-8.5-3.806-8.5-8.5z"></path>
               </g>
             </svg>
-            <span className="group-hover:text-primaryBlue hidden lg:inline">
+            <span className="group-hover:text-primaryBlue max-md:tiny-medium md:hidden lg:inline">
               Explore
             </span>
+            <Tooltip className="md:block hidden lg:hidden">Explore</Tooltip>
           </Link>
         </li>
         <li>
           <Link
             href={`/bookmark/${(session as CustomSession)?.user?.id}`}
-            className="flex gap-[8px] group items-center dark:text-primaryWhite text-primaryBlack body-bold"
+            className="flex flex-col lg:flex-row relative  gap-1 md:gap-[8px] group items-center dark:text-primaryWhite text-primaryBlack body-bold"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -74,15 +78,16 @@ function RightSideBar() {
                 className="dark:fill-primaryWhite w-[28px] md:w-[25px] md:h-[25px] h-[28px] group-hover:fill-primaryBlue fill-primaryBlack"
               />
             </svg>
-            <span className="group-hover:text-primaryBlue hidden lg:inline">
+            <span className="group-hover:text-primaryBlue max-md:tiny-medium md:hidden lg:inline">
               Bookmarks
             </span>
+            <Tooltip className="md:block hidden lg:hidden">Bookmarks</Tooltip>
           </Link>
         </li>
         <li>
           <Link
             href={`/profile/${(session as CustomSession)?.user?.id}`}
-            className="flex gap-[8px] group  items-center dark:text-primaryWhite text-primaryBlack body-bold"
+            className="flex flex-col lg:flex-row relative gap-1 md:gap-[8px] group items-center dark:text-primaryWhite text-primaryBlack body-bold"
           >
             <svg
               viewBox="0 0 24 24"
@@ -95,15 +100,16 @@ function RightSideBar() {
                 <path d="M5.651 19h12.698c-.337-1.8-1.023-3.21-1.945-4.19C15.318 13.65 13.838 13 12 13s-3.317.65-4.404 1.81c-.922.98-1.608 2.39-1.945 4.19zm.486-5.56C7.627 11.85 9.648 11 12 11s4.373.85 5.863 2.44c1.477 1.58 2.366 3.8 2.632 6.46l.11 1.1H3.395l.11-1.1c.266-2.66 1.155-4.88 2.632-6.46zM12 4c-1.105 0-2 .9-2 2s.895 2 2 2 2-.9 2-2-.895-2-2-2zM8 6c0-2.21 1.791-4 4-4s4 1.79 4 4-1.791 4-4 4-4-1.79-4-4z"></path>
               </g>
             </svg>
-            <span className="group-hover:text-primaryBlue lg:inline hidden">
+            <span className="group-hover:text-primaryBlue max-md:tiny-medium md:hidden lg:inline">
               Profile
             </span>{" "}
+            <Tooltip className="md:block hidden lg:hidden">Profile</Tooltip>
           </Link>
         </li>
         <li className="hidden md:block">
           <Link
             href={"#"}
-            className="md:flex gap-[8px] group  items-center dark:text-primaryWhite text-primaryBlack body-bold"
+            className="md:flex gap-[8px] group relative items-center dark:text-primaryWhite text-primaryBlack body-bold"
           >
             <span>
               <svg
@@ -114,7 +120,6 @@ function RightSideBar() {
               >
                 <path
                   d="M25.1213 18.585C25.0963 18.565 22.4462 16.535 22.4925 11.0475C22.5175 7.88251 21.4775 5.07001 19.5588 3.12876C17.84 1.38751 15.5125 0.425006 13.0062 0.412506H12.99C10.485 0.425006 8.1575 1.38751 6.4375 3.13001C4.52 5.07126 3.4775 7.88251 3.505 11.0475C3.55125 16.46 0.979999 18.5063 0.877499 18.585C0.552499 18.8263 0.419999 19.2475 0.546249 19.6325C0.673749 20.0175 1.03375 20.2763 1.43625 20.2763H7.58625C7.71375 23.1638 10.0825 25.4763 12.9987 25.4763C15.915 25.4763 18.2812 23.1638 18.4075 20.2763H24.56C24.9625 20.2763 25.3225 20.0188 25.4475 19.6338C25.5763 19.25 25.4437 18.8275 25.1187 18.5863L25.1213 18.585ZM13 23.5975C11.1187 23.5975 9.5875 22.1263 9.465 20.275H16.535C16.41 22.125 14.8812 23.6 13 23.6V23.5975ZM3.475 18.4C4.4 16.985 5.41 14.615 5.38 11.03C5.3575 8.33001 6.185 6.05251 7.77125 4.44626C9.1375 3.06251 10.9962 2.29626 13 2.28751C15.0037 2.29751 16.8587 3.06251 18.225 4.44751C19.8125 6.05376 20.6412 8.33001 20.6187 11.0313C20.5887 14.6163 21.6 16.9875 22.525 18.4013H3.475V18.4Z"
-                  /*  fill="#0F1419" */
                   className="dark:fill-primaryWhite  group-hover:fill-primaryBlue fill-primaryBlack"
                 />
               </svg>
@@ -122,12 +127,15 @@ function RightSideBar() {
             <span className="group-hover:text-primaryBlue lg:inline hidden">
               Notifications
             </span>
+            <Tooltip className="md:block hidden lg:hidden">
+              Notifications
+            </Tooltip>
           </Link>
         </li>
         <li className="hidden md:block">
           <Link
             href={"#"}
-            className="md:flex gap-[8px] group items-center dark:text-primaryWhite text-primaryBlack body-bold"
+            className="md:flex gap-[8px] group relative items-center dark:text-primaryWhite text-primaryBlack body-bold"
           >
             <span>
               <svg
@@ -147,12 +155,13 @@ function RightSideBar() {
             <span className="group-hover:text-primaryBlue lg:inline hidden">
               Messages
             </span>
+            <Tooltip className="md:block hidden lg:hidden">Messages</Tooltip>
           </Link>
         </li>
         <li className="hidden md:block">
           <Link
             href={"#"}
-            className="md:flex gap-[8px] group items-center dark:text-primaryWhite text-primaryBlack body-bold"
+            className="md:flex gap-[8px] group relative items-center dark:text-primaryWhite text-primaryBlack body-bold"
           >
             <span>
               <svg
@@ -170,12 +179,13 @@ function RightSideBar() {
             <span className="group-hover:text-primaryBlue lg:inline hidden">
               List
             </span>
+            <Tooltip className="md:block hidden lg:hidden">List</Tooltip>
           </Link>
         </li>
         <li className="hidden md:block">
           <Link
             href={"#"}
-            className="md:flex gap-[8px] group  items-center dark:text-primaryWhite text-primaryBlack body-bold"
+            className="md:flex gap-[8px] group relative items-center dark:text-primaryWhite text-primaryBlack body-bold"
           >
             <span>
               <svg
@@ -198,10 +208,18 @@ function RightSideBar() {
             <span className="group-hover:text-primaryBlue lg:inline hidden">
               More
             </span>
+            <Tooltip className="md:block hidden lg:hidden">More</Tooltip>
           </Link>
         </li>
         <Button className="lg:block hidden w-[180px] h-[50px] "> Tweet </Button>
-        <Button size="icon" style={{boxShadow:'rgba(217, 217, 217, 0.2) 0px 0px 5px, rgba(217, 217, 217, 0.25) 0px 1px 4px 1px'}} className="lg:hidden md:shadow-none w-[45px] h-[45px] rounded-[50%] fixed md:relative md:right-0 md:bottom-0 z-[400] right-[30px] bottom-[100px]">
+        <Button
+          size="icon"
+          style={{
+            boxShadow:
+              "rgba(217, 217, 217, 0.2) 0px 0px 5px, rgba(217, 217, 217, 0.25) 0px 1px 4px 1px",
+          }}
+          className="lg:hidden md:shadow-none w-[45px] h-[45px] rounded-[50%] fixed md:relative md:right-0 md:bottom-0 z-[400] right-[30px] bottom-[100px]"
+        >
           <svg
             viewBox="0 0 24 24"
             aria-hidden="true"
@@ -215,11 +233,13 @@ function RightSideBar() {
           </svg>
         </Button>
       </ul>
-      <ProfileBox user={{
-        displayName: (session as CustomSession)?.user?.name ?? 'no name',
-        username: (session as CustomSession)?.user?.username ?? 'no username',
-        profileImgUrl:  (session as CustomSession)?.user?.image ?? void 0
-      }}/>
+      <ProfileBox
+        user={{
+          displayName: (session as CustomSession)?.user?.name ?? "no name",
+          username: (session as CustomSession)?.user?.username ?? "no username",
+          profileImgUrl: (session as CustomSession)?.user?.image ?? void 0,
+        }}
+      />
     </nav>
   );
 }

@@ -12,14 +12,23 @@ type Props = {
 function ProfileBox({ user }: Props) {
   return (
     <div className="hidden md:block">
-      <div className="md:flex gap-[8px] group items-center dark:text-primaryWhite text-primaryBlack body-bold">
-        <figure className="relative h-9 w-9 flex-shrink-0 block">
+      <div className="md:flex lg:gap-[8px] group items-center dark:text-primaryWhite text-primaryBlack body-bold">
+        <figure className="relative h-9 w-9 flex-shrink-0 block md:self-center lg:self-start">
+          {user?.profileImgUrl ? (
           <Image
-            src={user?.profileImgUrl ?? "/profile.svg"}
+            src={user.profileImgUrl}
             alt="profile image"
             fill
             className="cursor-pointer rounded-full object-cover"
           />
+          ) : (
+            <Image
+            src={'/profile.svg'}
+            alt="profile image"
+            fill
+            className="cursor-pointer rounded-full object-cover"
+          />
+          )}
         </figure>
         <div className="hidden lg:block">
           <h4 className="font-semibold">{user.displayName}</h4>
