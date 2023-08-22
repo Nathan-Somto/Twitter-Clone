@@ -62,8 +62,7 @@ function TweetBox() {
     try {
       console.log(values);
       // modify isPublic based on user selection.
-      const isPublic = status === "Everyone" ? true : false;
-      values.isPublic = isPublic;
+      values.isPublic = status === "Everyone";
       // check if user is logged in
       if (!(session as CustomSession)?.user?.id || values.author === "1234") {
         throw new Error("The User must be logged in before you can tweet.");
