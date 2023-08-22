@@ -4,14 +4,17 @@ interface IUser {
     username: string,
     email:string,
     password: string,
-    joinedAt: Date,
     profileImgUrl?: string,
     profileCoverUrl: string,
-    followers?:IUser[],
+    followers:mongoose.Types.ObjectId[],
+    following:mongoose.Types.ObjectId[],
     displayName: string,
-    isVerfied: boolean,
+    isVerified: boolean,
     bio: string,
-    onBoarded: boolean
+    onBoarded: boolean,
+    joinedAt?:Date;
+    tweets: mongoose.Types.ObjectId[],
+    bookmarks: mongoose.Types.ObjectId[]
 }
  interface ITweet {
     author: mongoose.Types.ObjectId,
@@ -20,6 +23,7 @@ interface IUser {
     isRetweet: boolean,
     likes: mongoose.Types.ObjectId[],
     retweets: mongoose.Types.ObjectId[],
+    bookmarks: mongoose.Types.ObjectId[],
     imgUrls?: string[],
     tweetScore: number,
     comments: mongoose.Types.ObjectId[],

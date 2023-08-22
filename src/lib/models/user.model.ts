@@ -1,5 +1,6 @@
+import { IUser } from "@/types";
 import mongoose from "mongoose";
-const UserSchema = new mongoose.Schema({
+const UserSchema = new mongoose.Schema<IUser>({
   username: { type: String, maxlength: 256, minlength: 3, required: true },
   email: { type: String },
   joinedAt: { type: Date, default: Date },
@@ -14,5 +15,8 @@ const UserSchema = new mongoose.Schema({
   displayName: { type: String },
   isVerified: { type: Boolean, default: false },
 });
-const User = mongoose.models.users || mongoose.model("users", UserSchema)
+type IUserDocument = IUser & mongoose.Document;
+type IUserModel = mongoose.Model<IUserDocument>;
+
+const User:IUserModel = mongoose.models.users || mongoose.model<IUserDocument, IUserModel>("users", UserSchema)
 export default  User ;

@@ -33,7 +33,11 @@ const TweetSchema = new mongoose.Schema<ITweet>({
 }],
   retweets: [{ 
     type: mongoose.Schema.Types.ObjectId, 
-    ref: "tweets" 
+    ref: "users" 
+}],
+bookmarks: [{ 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "users" 
 }],
   imgUrls: [{ 
     type: String 
@@ -50,5 +54,7 @@ tweetScore: {
     required: true
 }
 });
-const Tweets = mongoose.models.tweets ||  mongoose.model("tweets", TweetSchema);
+type ITweetDocument = ITweet & mongoose.Document;
+type ITweetModel = mongoose.Model<ITweetDocument>;
+const Tweets: ITweetModel = mongoose.models.tweets ||  mongoose.model("tweets", TweetSchema);
 export default Tweets
