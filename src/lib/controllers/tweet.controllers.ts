@@ -30,6 +30,7 @@ const create_tweet = async (userId: Types.ObjectId, tweetData: Pick<ITweet, 'tex
     return {
       status: "success",
      tweet:{
+      //@ts-ignore
       ...tweet._doc,
       author:{
         username: user.username,
@@ -195,14 +196,19 @@ const delete_tweet = async (
       { _id: userId },
       { $pull: { tweets: tweetId } }
     );
-    // delete the comments associated with the tweet.
+    // delete all bookmarks of deleted tweet.
+      await User.updateMany(
+        {bookmarks: tweetId},
+        {$pull : { bookmarks: tweetId }}
+      )
+    // delete all comments associated with the tweet.
     await Comment.deleteMany({ tweetId });
     return {
       status: "successful",
       messsage: "successfully deleted the tweet",
     };
   } catch (err) {
-    console.error(err);
+    console.error((err as unknown  as Error).message);
     return {
       status: "failed",
       messsage: "failed to delete the tweet",
@@ -272,8 +278,9 @@ const toggle_tweet_like = async (
     await tweet.save();
     return {
       status: "success",
-      likeCount: tweet.likes.length,
-      tweetId,
+      likes: tweet.likes,
+      message: `successfully ${likeIndex === -1 ? 'unliked': 'liked'} tweet`,
+      liked: likeIndex === -1
     };
   } catch (err) {}
 };
@@ -282,7 +289,7 @@ const toggle_tweet_like = async (
  * @param userId 
  * @param originalTweetId 
  * @method POST
- * @route /api/users/:userId/tweet/:tweetId/retweet
+ * @route /api/users/:userId/tweet/retweet
  * @returns 
  */
 const retweet = async (
@@ -290,7 +297,7 @@ const retweet = async (
   userId: Types.ObjectId
 ) => {
   try {
-    const user = await User.findById({ id: userId })
+    const user = await User.findById(userId)
       .select("tweets")
       .populate("tweets", "originalTweetId");
     if (!user) {
@@ -325,7 +332,7 @@ const retweet = async (
     });
     await newRetweet.save();
     user.tweets.push(newRetweet._id);
-    originalTweet.retweets.push(newRetweet._id);
+    originalTweet.retweets.push(userId);
     originalTweet.tweetScore = calculateTweetScore(originalTweet);
     await user.save();
     return {

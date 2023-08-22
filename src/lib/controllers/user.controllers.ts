@@ -1,120 +1,115 @@
 import { Types } from "mongoose";
 import User from "../models/user.model";
-import Tweet from '../models/tweet.model';
+import Tweet from "../models/tweet.model";
 import { IUser } from "@/types";
+ 
 /**
- * 
- * @param userId 
+ *
+ * @param userId
  * @route /api/users/:userId
  * @method GET
- * @returns 
+ * @returns
  */
 const get_user_profile = async (userId: Types.ObjectId) => {
-  try{
+  try {
     const user = await User.findOne({ _id: userId })
       .populate("followers", "username, _id")
       .populate("following", "username, _id")
       .select("-email");
-      if(!user){
-        return {
-           status:"failed",
-           user:null,
-           messsage:"could not find the user"
-        }
-      }
+    if (!user) {
       return {
-        status:"success",
-        user,
-        messsage:"the user's profile."
-     }
-  }
-  catch(err){
-    console.error(err)
-    return {
-      status: 'failed',
-      message: 'failed to find user\'s profile.'
+        status: "failed",
+        user: null,
+        messsage: "could not find the user",
+      };
     }
+    return {
+      status: "success",
+      user,
+      messsage: "the user's profile.",
+    };
+  } catch (err) {
+    console.error(err);
+    return {
+      status: "failed",
+      message: "failed to find user's profile.",
+    };
   }
 };
 
 /**
- * 
- * @param userId 
+ *
+ * @param userId
  * @method GET
  * @route /api/users/:userId/followers
- * @returns 
+ * @returns
  */
 const get_user_followers = async (userId: Types.ObjectId) => {
-  try{
+  try {
     const userFollowers = await User.findById({ id: userId })
-    .populate("followers", "username, _id")
-    .select("followers");
-    if(!userFollowers){
+      .populate("followers", "username, _id")
+      .select("followers");
+    if (!userFollowers) {
       return {
-         user:userId,
-         followers: [],
-         messsage:"could not find any followers"
-      }
+        user: userId,
+        followers: [],
+        messsage: "could not find any followers",
+      };
     }
     return {
-      user:userId,
+      user: userId,
       followers: userFollowers,
-      messsage:"the users followers."
-   }
-  }
-  catch(err)
-  {
-    console.error(err)
+      messsage: "the users followers.",
+    };
+  } catch (err) {
+    console.error(err);
     return {
-      status: 'failed',
-      message: 'failed to find user\'s followers.'
-    }
+      status: "failed",
+      message: "failed to find user's followers.",
+    };
   }
-  
 };
 /**
- * 
- * @param userId 
+ *
+ * @param userId
  * @method GET
  * @route /api/users/:userId/following
- * @returns 
+ * @returns
  */
 const get_user_following = async (userId: Types.ObjectId) => {
-  try{
-    const userFollowing = await User.findById( userId )
-    .populate("following", "username, _id")
-    .select("following");
-    if(!userFollowing){
+  try {
+    const userFollowing = await User.findById(userId)
+      .populate("following", "username, _id")
+      .select("following");
+    if (!userFollowing) {
       return {
-         status: 'failed',
-         user:userId,
-         following: [],
-         messsage:"could not find any followers"
-      }
+        status: "failed",
+        user: userId,
+        following: [],
+        messsage: "could not find any followers",
+      };
     }
     return {
-      status: 'success',
-      user:userId,
+      status: "success",
+      user: userId,
       following: userFollowing,
-      messsage:"the users following."
-   }
-  }
-  catch(err){
-    console.error(err)
+      messsage: "the users following.",
+    };
+  } catch (err) {
+    console.error(err);
     return {
-      status: 'failed',
-      message: 'failed to find user\'s following'
-    }
+      status: "failed",
+      message: "failed to find user's following",
+    };
   }
- 
-  }
+};
 
 /**
- * 
- * @param userId 
+ *
+ * @param userId
  * @method GET
  * @route /api/users/:userId/follower-suggestion
- * @returns 
+ * @returns
  */
 const get_user_follower_suggestion = async (userId: Types.ObjectId) => {
   // controls the max suggestion.
@@ -142,7 +137,7 @@ const get_user_follower_suggestion = async (userId: Types.ObjectId) => {
         userSuggestions.push(possibleSuggestions[randomIndex]);
         possibleSuggestions.splice(randomIndex, 1);
       }
-    } 
+    }
     // if the user has followers. get at most  10 users that are not user and user's followers.
     else {
       const possibleSuggestions = await User.find({
@@ -150,7 +145,7 @@ const get_user_follower_suggestion = async (userId: Types.ObjectId) => {
       })
         .select("-password, -bookmarks, -followers, -following, -email")
         .limit(10);
-        // when we have no suggestion
+      // when we have no suggestion
       if (possibleSuggestions.length === 0) {
         return {
           status: "failed",
@@ -179,16 +174,16 @@ const get_user_follower_suggestion = async (userId: Types.ObjectId) => {
     console.error(err);
     return {
       status: "success",
-      message: "an error occured while fetching user suggestions."
+      message: "an error occured while fetching user suggestions.",
     };
   }
 };
 /**
- * 
- * @param userId 
+ *
+ * @param userId
  * @method GET
  * @route /api/users/:userId/tweets?pageSize=:pageSize&page=:page
- * @returns 
+ * @returns
  */
 const get_user_tweets = async (
   userId: Types.ObjectId,
@@ -201,68 +196,186 @@ const get_user_tweets = async (
       .populate("tweets")
       .skip((page - 1) * pageSize)
       .limit(pageSize);
-      if(!user){
-        return {
-          status:"failed",
-          tweets:null,
-           messsage:"could not find the user"
-        }
-      }
-      const totalTweets = user.tweets.length
+    if (!user) {
       return {
-        totalPages: Math.ceil(totalTweets / user.tweets.length),
-        page,
-        pageSize,
-        status:"success",
-        tweets: user.tweets,
-        messsage:"the user's tweets"
-     }
-  } catch (err) {
-    console.error(err)
+        status: "failed",
+        tweets: null,
+        messsage: "could not find the user",
+      };
+    }
+    const totalTweets = user.tweets.length;
     return {
-      status: 'failed',
-      message: 'failed to find tweets.'
+      userId,
+      totalPages: Math.ceil(totalTweets / pageSize),
+      page,
+      pageSize,
+      status: "success",
+      tweets: user.tweets,
+      messsage: "the user's tweets",
+    };
+  } catch (err) {
+    console.error(err);
+    return {
+      status: "failed",
+      message: "failed to find tweets.",
+    };
+  }
+};
+/**
+ *
+ * @param userId
+ * @method PUT
+ * @route /api/users/:userId/bookmarks
+ * @returns
+ */
+const add_to_user_bookmarks = async (
+  userId: Types.ObjectId,
+  tweetId: Types.ObjectId
+) => {
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return {
+        status: "failed",
+        message: "user not found!",
+      };
+    }
+    const tweet = await Tweet.findById(tweetId);
+    if (!tweet) {
+      return {
+        status: "failed",
+        message: "tweet not found!",
+      };
+    }
+    tweet.bookmarks.push(userId);
+    user.bookmarks.push(tweetId);
+    await tweet.save();
+    await user.save();
+    return {
+      status: "success",
+      tweet,
+      bookmarksForTweets: tweet.bookmarks.length,
+      bookmarksForUser: user.bookmarks.length,
+    };
+  } catch (err) {
+    if (err instanceof Error) {
+      console.error(err.message);
+      return {
+        status: "failed",
+        message: "failed to bookmark tweet.",
+      };
     }
   }
 };
 /**
- * 
- * @param userId 
- * @method PUT
- * @route /api/users/:userId/bookmarks
- * @returns 
- */
-const add_to_user_bookmarks = async () => {};
-/**
- * 
- * @param userId 
+ *
+ * @param userId
  * @method GET
  * @route /api/users/:userId/bookmarks
- * @returns 
+ * @returns
  */
-const get_user_bookmarks = async (userId: Types.ObjectId) => {};
+const get_user_bookmarks = async (
+  userId: Types.ObjectId,
+  pageSize = 15,
+  page = 1
+) => {
+  try {
+    const user = await User.findById(userId)
+      .select("bookmarks")
+      .populate("bookmarks")
+      .skip((page - 1) * pageSize)
+      .limit(pageSize);
+    if (!user) {
+      return {
+        status: "failed",
+        tweets: null,
+        messsage: "could not find the user",
+      };
+    }
+    const totalBookmarks = user.bookmarks.length;
+    return {
+      userId,
+      totalPages: Math.ceil(totalBookmarks / pageSize),
+      page,
+      pageSize,
+      status: "success",
+      bookmarks: user.bookmarks,
+      messsage: "the user's bookmarks",
+    };
+  } catch (err) {
+    if (err instanceof Error) {
+      console.error(err.message);
+      return {
+        status: "failed",
+        message: "failed to get user's bookmark's.",
+      };
+    }
+  }
+};
 /**
- * 
- * @param userId 
+ *
+ * @param userId
  * @method DELETE
- * @route /api/users/:userId/bookmarks/:bookmarkId
- * @returns 
+ * @route /api/users/:userId/bookmarks/:tweetId
+ * @returns
  */
-const delete_from_user_bookmarks = async () => {};
+const delete_from_user_bookmarks = async (
+  userId: Types.ObjectId,
+  tweetId: Types.ObjectId
+) => {
+  try {
+    // find user
+    const user = await User.findById(userId);
+    // validate user response
+    if (!user) {
+      return {
+        status: "failed",
+        message: "user not found!",
+      };
+    }
+    // find tweet
+    const tweet = await Tweet.findById(tweetId);
+    // validate tweet response
+    if (!tweet) {
+      return {
+        status: "failed",
+        message: "tweet not found!",
+      };
+    }
+    // remove the tweet from user bookmarks.
+    user.bookmarks = user.bookmarks.filter(
+      (bookmark) => !bookmark.equals(tweetId)
+    );
+    // remove user id from tweet bookmarks.
+    tweet.bookmarks = tweet.bookmarks.filter(
+      (bookmark) => !bookmark.equals(userId)
+    );
+    // save responses
+    await user.save();
+    await tweet.save();
+    // return response
+    return {
+      status: "success",
+      message: "successfully removed bookmark",
+      bookmarksForTweet: tweet.bookmarks,
+      bookmarksForUser: user.bookmarks
+    };
+  } catch (err) {
+    if (err instanceof Error) {
+      console.error(err.message);
+      return {
+        status: "failed",
+        message: "failed to bookmark tweet.",
+      };
+    }
+  }
+};
 /**
- * 
- * @param userId 
- * @method DELETE
- * @route /api/users/:userId/bookmarks
- * @returns 
- */
-const delete_user_bookmarks = async () => {};
-/**
- * 
- * @param userId 
+ *
+ * @param userId
  * @method GET
  * @route /api/users/?searchTerm=:searchTerm&pageSize=:pageSize&page=:page&sortBy=:sortBy
- * @returns 
+ * @returns
  */
 const get_users = async (
   searchTerm = "",
@@ -274,16 +387,12 @@ const get_users = async (
   const sortOrder = sortBy === "desc" ? -1 : 1;
   const skipAmount = (pageNumber - 1) * pageSize;
   const regExp = { $regex: searchQuery, $options: "i" };
-  const q =  {
+  const q = {
     $or: [{ username: regExp }, { displayName: regExp }],
-  }
+  };
   try {
-    const totalUsers = await User.countDocuments(q)
-    const users = await User.find(
-      searchQuery
-        ? q
-        : {}
-    )
+    const totalUsers = await User.countDocuments(q);
+    const users = await User.find(searchQuery ? q : {})
       .limit(pageSize)
       .skip(skipAmount)
       .select("-password, -bookmarks, -followers, -following, -email")
@@ -295,29 +404,50 @@ const get_users = async (
       };
     }
     return {
-      totalPages: Math.ceil(totalUsers/ pageSize),
+      totalPages: Math.ceil(totalUsers / pageSize),
       pageNumber,
       message: searchTerm
         ? `found users for ${searchTerm}`
         : "the available users",
       users,
     };
-  } catch (err) {}
+  } catch (err) {
+    if (err instanceof Error) {
+      console.error(err.message);
+      return {
+        status: "failed",
+        message: "failed to  search for user's.",
+      };
+    }
+  }
 };
 /**
- * 
- * @param userId 
+ *
+ * @param userId
  * @method PUT
  * @route /api/users/:userId
- * @returns 
+ * @returns
  */
 const update_user_profile = async (
   userId: Types.ObjectId,
-  userProfile: Partial<Pick<IUser, 'bio' | 'username' | 'profileImgUrl' | 'profileCoverUrl' | 'onBoarded' | "displayName"| "email">>
+  userProfile: Partial<
+    Pick<
+      IUser,
+      | "bio"
+      | "username"
+      | "profileImgUrl"
+      | "profileCoverUrl"
+      | "onBoarded"
+      | "displayName"
+      | "email"
+    >
+  >
 ) => {
-  try{
+  try {
     // validate the user Payload before calling this function
-    const foundUser = await User.findById( userId ).select('bio, email, username, profileImgUrl, profileCoverUrl');
+    const foundUser = await User.findById(userId).select(
+      "bio, email, username, profileImgUrl, profileCoverUrl"
+    );
     if (!foundUser)
       return {
         status: "failed",
@@ -325,32 +455,32 @@ const update_user_profile = async (
       };
     foundUser.bio = userProfile.bio || foundUser.bio;
     foundUser.username = userProfile.username || foundUser.username;
-    foundUser.profileImgUrl = userProfile.profileImgUrl || foundUser.profileImgUrl;
-    foundUser.profileCoverUrl = userProfile.profileCoverUrl || foundUser.profileCoverUrl;
+    foundUser.profileImgUrl =
+      userProfile.profileImgUrl || foundUser.profileImgUrl;
+    foundUser.profileCoverUrl =
+      userProfile.profileCoverUrl || foundUser.profileCoverUrl;
     foundUser.onBoarded = userProfile.onBoarded || foundUser.onBoarded;
     foundUser.displayName = userProfile.displayName || foundUser.displayName;
     foundUser.email = userProfile.email || foundUser.email;
     await foundUser.save();
     return {
       status: "success",
-      updatedUser: foundUser
-    }
-  }
-  catch(err)
-  {
-    console.error(err)
+      updatedUser: foundUser,
+    };
+  } catch (err) {
+    console.error(err);
     return {
       status: "failed",
-      message: 'failed to update user profile.'
-    }
+      message: "failed to update user profile.",
+    };
   }
 };
 /**
- * 
- * @param userId 
+ *
+ * @param userId
  * @method PUT
  * @route /api/users/:userId/follow
- * @returns 
+ * @returns
  */
 const follow_user = async (
   newFollowerId: Types.ObjectId,
@@ -387,25 +517,25 @@ const follow_user = async (
 };
 const delete_user_profile = async (userId: Types.ObjectId) => {
   try {
-      // Delete the user
-      await User.findByIdAndDelete(userId);
+    // Delete the user
+    await User.findByIdAndDelete(userId);
 
-      // Delete all tweets linked to the user through the author property
-      await Tweet.deleteMany({ author: userId });
+    // Delete all tweets linked to the user through the author property
+    await Tweet.deleteMany({ author: userId });
 
-      return {
-          status: 'success',
-          message: 'User profile and linked tweets deleted successfully.'
-      };
+    return {
+      status: "success",
+      message: "User profile and linked tweets deleted successfully.",
+    };
   } catch (err) {
-      console.error(err);
-      return {
-          status: 'failed',
-          message: 'An error occurred while deleting the user profile and linked tweets.'
-      };
+    console.error(err);
+    return {
+      status: "failed",
+      message:
+        "An error occurred while deleting the user profile and linked tweets.",
+    };
   }
 };
-
 
 export {
   get_users,
@@ -416,5 +546,8 @@ export {
   follow_user,
   delete_user_profile,
   update_user_profile,
-  get_user_tweets
+  get_user_tweets,
+  add_to_user_bookmarks,
+  get_user_bookmarks,
+  delete_from_user_bookmarks
 };
