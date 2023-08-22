@@ -14,6 +14,7 @@ export interface Tweet{
         comments: string[];
         tweetScore: number;
         retweets: string[];
+        bookmarks: string[];
      
 }
 interface TweetState  {
