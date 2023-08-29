@@ -87,7 +87,9 @@
   .small-semibold {
     @apply text-[14px] font-semibold leading-[140%];
   }
-
+  .small-bold{
+    @apply text-[14px] font-bold leading-[140%];
+  }
   .subtle-medium {
     @apply text-[12px] font-medium leading-[16px];
   }
