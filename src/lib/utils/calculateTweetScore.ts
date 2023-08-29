@@ -1,6 +1,7 @@
+import { Tweet } from "@/features/tweets/tweetsSlice";
 import { ITweet } from "@/types";
-
-const calculateTweetScore = (tweet: ITweet) => {
+// To be used on both client side and server
+const calculateTweetScore = (tweet: ITweet | Tweet) => {
     const likeWeight = 1;
     const commentWeight = 2;
     const retweetWeight = 5;
