@@ -20,7 +20,7 @@ export default async function handler(
     if (!mongoose.Types.ObjectId.isValid(userId ?? "")) {
       return res.status(400).json({ error: "Invalid userId" });
     }
-    connectDb();
+    await connectDb();
     switch (req.method) {
       case "GET":
         const response = await get_user_profile(userId as mongoose.Types.ObjectId);

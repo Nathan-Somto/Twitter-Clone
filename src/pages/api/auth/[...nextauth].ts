@@ -59,7 +59,7 @@ export const authOptions:NextAuthOptions = {
       }
       // creates the jwt called during the sign in process.
       if (user && trigger === 'signIn') {
-        connectDb();
+         await connectDb();
         const existingUser = await userModel.findOne({ email: user.email });
         // checks if we have an existing user then prefill content.
         if (existingUser) {

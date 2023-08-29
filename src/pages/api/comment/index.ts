@@ -8,7 +8,7 @@ export default async function handler(
     res: NextApiResponse
   ) {
       try{
-        connectDb()
+        await connectDb()
         const { author, text, tweetId } = req.body;
         const validationResults = CommentValidation.safeParse({
           author,

@@ -16,7 +16,7 @@ export default async function handler(
   res: NextApiResponse
 ) {
     try{
-        connectDb();
+        await connectDb();
         const { userId, pageSize, pageNumber }: dynamicParams = req.query;
         if (!mongoose.Types.ObjectId.isValid(userId ?? "")) {
           return res.status(400).json({status:"failed", error: "Invalid userId" });

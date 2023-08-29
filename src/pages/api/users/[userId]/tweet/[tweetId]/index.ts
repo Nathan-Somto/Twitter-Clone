@@ -14,7 +14,7 @@ export default async function handler(
 ) {
   try{
     const {tweetId, userId}: dynamicParams = req.query
-    connectDb()
+      await connectDb();
     if (!mongoose.Types.ObjectId.isValid(userId ?? "") || !mongoose.Types.ObjectId.isValid(tweetId ?? "")) {
         return res.status(400).json({ error: "Invalid userId" });
       }

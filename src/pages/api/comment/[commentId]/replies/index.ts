@@ -20,7 +20,7 @@ export default async function handler(
     if (!mongoose.Types.ObjectId.isValid(commentId ?? "")) {
       return res.status(400).json({ error: "Invalid userId" });
     }
-    connectDb();
+    await connectDb();
     switch (req.method) {
       case "GET":
         const getResponse = await get_replies_to_comment(

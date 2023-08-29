@@ -18,7 +18,7 @@ export default async function handler(
 ) {
   try{
     const { userId,pageSize,pageNumber,latest,top}: dynamicParams = req.query
-    connectDb()
+    await connectDb();
     if (!mongoose.Types.ObjectId.isValid(userId ?? "")) {
         return res.status(400).json({ error: "Invalid userId" });
       }

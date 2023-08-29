@@ -22,7 +22,7 @@ export default async function handler(
     ) {
       return res.status(400).json({ error: "Invalid userId or targetUserId" });
     }
-    connectDb();
+    await connectDb();
     if (req.method === "PUT") {
       const response = await follow_user(
         userId as mongoose.Types.ObjectId,
