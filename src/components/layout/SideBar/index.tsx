@@ -41,7 +41,7 @@ function RightSideBar() {
         </li>
         <li>
           <Link
-            href={"/search?searchTerm="}
+            href={"/search?searchTerm=%20"}
             className="flex flex-col lg:flex-row relative gap-1 md:gap-[8px] group items-center dark:text-primaryWhite text-primaryBlack body-bold"
           >
             <svg
