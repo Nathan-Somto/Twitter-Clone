@@ -1,45 +1,92 @@
 import TweetCard from "@/components/card/TweetCard";
 import { Button } from "@/components/ui/button";
-import { selectTweets } from "@/features/tweets/tweetsSlice";
-import React, { useState } from "react";
+import {
+  filterType,
+  selectFilter,
+} from "@/features/filterTweets/filterTweetsSlice";
+import { TweetState, selectTweets } from "@/features/tweets/tweetsSlice";
+import React, { useCallback } from "react";
 import { useSelector } from "react-redux";
 
-type Props = {};
+type Props = {
+  fetchMoreTweets: () => Promise<void>;
+  noMoreTweets: boolean;
+  loading: boolean;
+};
 
-function Feed({}: Props) {
+function Feed({ fetchMoreTweets, loading, noMoreTweets }: Props) {
   // get tweets from redux store.
-  const {tweets} = useSelector(selectTweets);
-  const [page, setPage] = useState<number>(1);
-  async function fetchMoreTweets() {
-    // when user reaches the end of feed , have a load more button to fetch more tweets.
-  }
-  //on first load dispatch tweets to tweets slice
+  const tweets = useSelector(selectTweets);
+  const selectedFilter = useSelector(selectFilter);
+  // filtering logic for feed.
+  const filteredTweets = useCallback(
+    (tweetsState: TweetState, selectedFilter: filterType) => {
+      const { tweets, originalTweetIndex } = tweetsState;
+      let filteredTweets = tweets.slice();
+      if (selectedFilter === "Top") {
+        filteredTweets.sort((a, b) => b.tweetScore - a.tweetScore);
+      }
+
+      if (selectedFilter === "Latest") {
+        filteredTweets.sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+      }
+
+      if (selectedFilter === "Following") {
+        filteredTweets = filteredTweets.filter((tweet) => tweet.isPublic);
+      }
+      return filteredTweets.map((tweet) => ({
+        tweet: tweets[originalTweetIndex[tweet._id]],
+        originalIndex: originalTweetIndex[tweet._id],
+      }));
+    },
+    []
+  );
+  console.log(filteredTweets(tweets, selectedFilter));
   return (
     <section className="border-t dark:border-t-dark4">
-      {tweets.map((data) => (
-        <TweetCard {...data} key={data._id} isTweetPage={false} />
-      ))}
-      <div className="flex items-center space-x-2">
-        <div
-          style={{ animationDelay: "0.1s" }}
-          className="h-[6px] w-[6px] p-[6px] rounded-full bg-primaryBlue animate-bounce shadow-[0_0_5px_#fff]"
-        ></div>
-        <div
-          style={{ animationDelay: "0.25s" }}
-          className="h-[6px] w-[6px] p-[6px] rounded-full bg-primaryBlue animate-bounce shadow-[0_0_5px_#fff]"
-        ></div>
-        <div
-          style={{ animationDelay: "0.4s" }}
-          className="h-[6px] w-[6px] p-[6px] rounded-full bg-primaryBlue animate-bounce shadow-[0_0_5px_#fff]"
-        ></div>
-      </div>
-      <div>
-        <p className="h3-semibold opacity-80">No more Tweets</p>
-      </div>
-      <div>
-        <Button onClick={fetchMoreTweets}>Load More</Button>
-      </div>
-      {tweets.length !== 0 && (
+      {filteredTweets(tweets, selectedFilter).map(
+        ({ tweet, originalIndex }) => (
+          <TweetCard
+            {...tweet}
+            key={tweet._id}
+            isTweetPage={false}
+            index={originalIndex}
+          />
+        )
+      )}
+      {noMoreTweets ? (
+        <div>
+          <p className="h4-medium !font-semibold opacity-80 text-center mt-4">No more Tweets</p>
+        </div>
+      ) : (
+        <div>
+          {loading ? (
+            /* custom loader */
+            <div className="flex items-center space-x-2">
+              <div
+                style={{ animationDelay: "0.1s" }}
+                className="h-[6px] w-[6px] p-[6px] rounded-full bg-primaryBlue animate-bounce shadow-[0_0_5px_#fff]"
+              ></div>
+              <div
+                style={{ animationDelay: "0.25s" }}
+                className="h-[6px] w-[6px] p-[6px] rounded-full bg-primaryBlue animate-bounce shadow-[0_0_5px_#fff]"
+              ></div>
+              <div
+                style={{ animationDelay: "0.4s" }}
+                className="h-[6px] w-[6px] p-[6px] rounded-full bg-primaryBlue animate-bounce shadow-[0_0_5px_#fff]"
+              ></div>
+            </div>
+          ) : (
+            <Button disabled={loading} onClick={fetchMoreTweets}>
+              {"Load More"}
+            </Button>
+          )}
+        </div>
+      )}
+      {tweets.tweets.length === 0 && (
         <div>
           <p className="h4-medium font-semibold opacity-80">
             Could not Retrieve Tweets at this moment.
