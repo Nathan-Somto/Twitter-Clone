@@ -14,6 +14,11 @@ function Layout({ children }: { children: React.ReactNode }) {
       <Loader size="lg"/>    
       </div>
   }
+  // user not logged in.
+  if(!(session as CustomSession)?.user){
+    router.push('/sign-in')
+  }
+  // user not onboarded
   if(!(session  as CustomSession)?.user?.onBoarded){
     router.push('/onboarding');
   }
