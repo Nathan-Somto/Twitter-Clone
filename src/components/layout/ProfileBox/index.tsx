@@ -12,8 +12,8 @@ type Props = {
 function ProfileBox({ user }: Props) {
   return (
     <div className="hidden md:block">
-      <div className="md:flex lg:gap-[8px] group items-center dark:text-primaryWhite text-primaryBlack body-bold">
-        <figure className="relative h-9 w-9 flex-shrink-0 block md:self-center lg:self-start">
+      <div className="md:flex lg:gap-[8px] group justify-center lg:justify-start items-center dark:text-primaryWhite text-primaryBlack body-bold">
+        <figure className="relative h-10 w-10 lg:h-9 lg:w-9 flex-shrink-0 block md:self-center lg:self-start">
           {user?.profileImgUrl ? (
           <Image
             src={user.profileImgUrl}
