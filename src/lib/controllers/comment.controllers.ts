@@ -2,12 +2,15 @@ import { Types } from "mongoose"
 import Comment from '../models/comment.model'
 import Tweet from '../models/tweet.model'
 import {IComment} from '@/types'
+import User from "../models/user.model"
+import Notification from "../models/notification.models";
 /**
  * 
  * @param commentId 
  * @returns 
  * @route /api/comments/:commentId/replies
  * @method GET
+ * @description get's the replies to a particular comment.
  */
 const get_replies_to_comment = async (commentId:Types.ObjectId) => {
     try{
@@ -28,7 +31,8 @@ const get_replies_to_comment = async (commentId:Types.ObjectId) => {
         }
         return {
             status: 'success',
-            replies: comment
+            //@ts-ignore
+            replies:comment._doc.replies
         }
     }
     catch(err){
@@ -46,11 +50,20 @@ const get_replies_to_comment = async (commentId:Types.ObjectId) => {
  * @returns 
  * @route /api/comments/
  * @method POST
+ * @description adds a comment to a specific tweet.
  */
 const add_comment_to_tweet = async (tweetId: Types.ObjectId, commentData: Pick<IComment, 'author' | "text"| 'tweetId'>) => {
     try{
-    const tweet = await Tweet.findById(tweetId)
-    const comment = new Comment(commentData)
+    const tweet = await Tweet.findById(tweetId);
+    const user = await User.findById(commentData.author).populate('profileImgUrl displayName username');
+    const comment = new Comment(commentData);
+    if(!user){
+        return {
+            status: 'failed',
+            message: 'could not find author.',
+            author: commentData.author
+        }
+    }
     if(!comment || !tweet)
         {
             return {
@@ -60,10 +73,26 @@ const add_comment_to_tweet = async (tweetId: Types.ObjectId, commentData: Pick<I
         }
     await comment.save();
     tweet.comments.push(comment._id as unknown as Types.ObjectId)
+    const notification = new Notification({
+        parentUser: tweet.author,
+        actionUser: user._id,
+        message: 'commented',
+        tweetId: tweet._id
+      });
+    await notification.save();
     await tweet.save();
     return {
         status: 'success',
-        comment
+        comment:{
+            //@ts-ignore
+            ...comment._doc,
+            author: {
+                username: user.username,
+                displayName: user.displayName,
+                profileImgUrl: user.profileImgUrl,
+                _id: user._id
+            }
+        }
     }
     }
     catch(err)
@@ -83,10 +112,19 @@ const add_comment_to_tweet = async (tweetId: Types.ObjectId, commentData: Pick<I
  * @route /api/comments/:commentId/replies
  * @returns 
  * @method POST
+ * @description adds a reply to a specific comment.
  */
 const add_reply_to_comment = async (commentId:Types.ObjectId, commentData: Pick<IComment, 'author' | "text"| "parentComment"| 'tweetId'>)=> {
     try{
         const comment = await Comment.findById(commentId)
+        const user = await User.findById(commentData.author).populate('profileImgUrl displayName username');
+        if(!user){
+            return {
+                status: 'failed',
+                message: 'could not find author.',
+                author: commentData.author
+            }
+        }
         if(!comment)
         {
             return {
@@ -94,14 +132,22 @@ const add_reply_to_comment = async (commentId:Types.ObjectId, commentData: Pick<
                 message: "could not find comment"
             }
         }
-        commentData.parentComment = comment._id as unknown as Types.ObjectId
         const reply = new Comment(commentData)
-        await reply.save()
-        comment.replies.push(comment._id)
-        await comment.save()
+        comment.replies.push(reply._id);
+        await reply.save();
+        await comment.save();
         return {
             status: 'success',
-            reply
+            reply:{
+                //@ts-ignore
+                 ...reply._doc,
+                author: {
+                    username: user.username,
+                    displayName: user.displayName,
+                    profileImgUrl: user.profileImgUrl,
+                    _id: user._id
+                }
+            }
         }
     }
     catch(err)
@@ -116,6 +162,7 @@ const add_reply_to_comment = async (commentId:Types.ObjectId, commentData: Pick<
 /**
  * @route /api/comments/:commentId/replies/:replyId
  * @method DELETE
+ * @description deletes a reply to a specific comment.
  */
 const delete_reply_to_comment = async (commentId: Types.ObjectId, replyId: Types.ObjectId) => {
     try{
@@ -154,6 +201,7 @@ const delete_reply_to_comment = async (commentId: Types.ObjectId, replyId: Types
 /**
  * @route /api/comments/:commentId
  * @method DELETE
+ * @description deletes a specific comment.
  */
 const delete_comment = async (commentId: Types.ObjectId,) => {
     try{

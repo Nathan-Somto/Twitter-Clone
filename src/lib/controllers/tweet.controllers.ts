@@ -1,6 +1,7 @@
 import { ITweet } from "@/types";
 import User from "../models/user.model";
 import Tweet from "../models/tweet.model";
+import Notification from "../models/notification.models";
 import Comment from "../models/comment.model";
 import mongoose, { SortOrder, Types } from "mongoose";
 import calculateTweetScore from "../utils/calculateTweetScore";
@@ -10,7 +11,7 @@ import calculateTweetScore from "../utils/calculateTweetScore";
  * @param tweetData 
  * @method Post
  * @route /api/users/:userId/tweet/
- * @returns 
+ * @description creates a single tweet.
  */
 const create_tweet = async (userId: Types.ObjectId, tweetData: Pick<ITweet, 'text' | 'author' | 'imgUrls' | 'isPublic' | 'isRetweet'>) => {
   // validation is done before tweetData is passed to function.
@@ -54,7 +55,7 @@ const create_tweet = async (userId: Types.ObjectId, tweetData: Pick<ITweet, 'tex
  * @param userId 
  * @route /api/users/:userId/tweet/:tweetId
  * @method GET
- * @returns 
+ * @description gets a single tweet with it's comments.
  */
 const get_tweet = async (tweetId: Types.ObjectId, userId: Types.ObjectId) => {
   try {
@@ -74,6 +75,7 @@ const get_tweet = async (tweetId: Types.ObjectId, userId: Types.ObjectId) => {
       return {
         status: "failed",
         message: "could not find the twet",
+        notFound: true,
       };
     }
     if (!tweet.isPublic) {
@@ -82,10 +84,12 @@ const get_tweet = async (tweetId: Types.ObjectId, userId: Types.ObjectId) => {
         return {
           status: "failed",
           message: "User not found",
+          notFound: true
         };
       if (!user.following.includes(tweet.author._id)) {
         return {
           status: "failed",
+          noAccess: false,
           message:
             "you cannot read this tweet because it is private consider following the user to gain access.",
         };
@@ -102,7 +106,9 @@ const get_tweet = async (tweetId: Types.ObjectId, userId: Types.ObjectId) => {
       };
     }
   } catch (err) {
-    console.error(err);
+    if(err instanceof Error){
+      console.error(err.message);
+    }
     return {
       status: "failed",
       message: "there was an error",
@@ -118,7 +124,7 @@ const get_tweet = async (tweetId: Types.ObjectId, userId: Types.ObjectId) => {
  * @param latest 
  * @method GET
  * @route /api/users/:userId/tweet/feed?pageSize=:pageSize&page=:page&top=:top&latest=:latest
- * @returns 
+ * @description fetches a personalized feed for a user.
  */
 const get_feed_tweets = async (
   userId: Types.ObjectId,
@@ -128,17 +134,18 @@ const get_feed_tweets = async (
   latest = true
 ) => {
   try {
-    const user = await User.findById({ _id: userId }).select("following");
+    const user = await User.findById( userId ).select("following");
     if (!user) {
       return {
         status: "failed",
         message: "User not found",
       };
     }
-    // basically check if a tweet is public or if it is private show only if the user follows the private tweeter.
+    // basically check if a tweet is public or or if it is the user's tweet show regardless if it is private show only if the user follows the private tweeter.
     const query = {
       $or: [
         { isPublic: true },
+        {author: userId},
         { isPublic: false, author: { $in: user.following } },
       ],
     };
@@ -161,7 +168,7 @@ const get_feed_tweets = async (
       };
     }
     const tweets = await Tweet.find(query)
-      .populate("author", "username, profileImgUrl")
+      .populate("author", "username profileImgUrl displayName")
       .sort(sortOptions)
       .skip((page - 1) * pageSize)
       .limit(pageSize);
@@ -184,7 +191,7 @@ const get_feed_tweets = async (
  * @param userId 
  * @route /api/users/:userId/tweets/:tweetId
  * @method DELETE
- * @returns 
+ * @description deletes a tweet for a user.
  */
 const delete_tweet = async (
   tweetId: Types.ObjectId,
@@ -222,6 +229,7 @@ const delete_tweet = async (
  * @method PUT 
  * @returns 
  * @route /api/users/:userId/tweets/:tweetId
+ * @description changes the tweet status from public to private, vice-versa.
  */
 // you cant edit the content of a tweet only the status of public or private.
 const update_tweet_status = async (status: boolean, tweetId: Types.ObjectId) => {
@@ -247,7 +255,7 @@ const update_tweet_status = async (status: boolean, tweetId: Types.ObjectId) => 
  * @method PUT
  * @param tweetId
  * @route /api/users/userId/tweets/:tweetId/like 
- * @returns 
+ * @description likes and unlikes a tweet.
  */
 const toggle_tweet_like = async (
   userId: Types.ObjectId,
@@ -272,17 +280,28 @@ const toggle_tweet_like = async (
     if (likeIndex !== -1) {
       tweet.likes.splice(likeIndex, 1);
     } else {
-      tweet.likes.push(userId);
+      tweet.likes.unshift(userId);
+      const notification = new Notification({
+        parentUser: tweet.author,
+        actionUser: userId,
+        message: 'liked',
+        tweetId: tweet._id
+
+      });
+      await notification.save();
     }
     tweet.tweetScore = calculateTweetScore(tweet);
     await tweet.save();
     return {
       status: "success",
       likes: tweet.likes,
-      message: `successfully ${likeIndex === -1 ? 'unliked': 'liked'} tweet`,
-      liked: likeIndex === -1
+      message: `successfully ${likeIndex !== -1 ? 'unliked': 'liked'} tweet`,
+      liked: likeIndex === -1,
+      userId
     };
-  } catch (err) {}
+  } catch (err) {
+
+  }
 };
 /**
  * 
@@ -290,7 +309,7 @@ const toggle_tweet_like = async (
  * @param originalTweetId 
  * @method POST
  * @route /api/users/:userId/tweet/retweet
- * @returns 
+ * @description gets the original tweet and retweets it.
  */
 const retweet = async (
   originalTweetId: Types.ObjectId,
@@ -315,8 +334,8 @@ const retweet = async (
         message: "user has already retweeted.",
       };
     }
-    const originalTweet = await Tweet.findById({ _id: originalTweetId }).select(
-      "-comments, -likes, -_id"
+    const originalTweet = await Tweet.findById(originalTweetId).select(
+      "comments likes retweets text imgUrls tweetScore author"
     );
     if (!originalTweet) {
       return {
@@ -325,22 +344,37 @@ const retweet = async (
       };
     }
     const newRetweet = new Tweet({
-      ...originalTweet,
       isRetweet: true,
       originalTweetId,
       author: userId,
+      text: originalTweet.text,
+      tweetScore:0,
+      imgUrls: originalTweet.imgUrls
     });
-    await newRetweet.save();
-    user.tweets.push(newRetweet._id);
-    originalTweet.retweets.push(userId);
+    console.log("originalTweet >> ", originalTweet);
+    console.log("new retweet>>", newRetweet)
+    user.tweets.unshift(newRetweet._id);
+    originalTweet.retweets.unshift(userId);
     originalTweet.tweetScore = calculateTweetScore(originalTweet);
+    const notification = new Notification({
+      parentUser: originalTweet.author,
+      actionUser: userId,
+      message: 'retweeted',
+      tweetId: originalTweet._id
+
+    });
+    await notification.save();
+    await newRetweet.save();
     await user.save();
+    await originalTweet.save();
     return {
       status: "success",
       reTweet: newRetweet,
     };
   } catch (err) {
-    console.error("An error occurred:", err);
+    if(err instanceof Error){
+    console.error("An error occurred:", err.message);
+    }
     return {
       status: "failed",
       message: "An error occurred while retweeting.",

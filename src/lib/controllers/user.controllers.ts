@@ -1,21 +1,23 @@
 import { Types } from "mongoose";
 import User from "../models/user.model";
 import Tweet from "../models/tweet.model";
+import Notification from "../models/notification.models";
 import { IUser } from "@/types";
- 
+import calculateTweetScore from "../utils/calculateTweetScore";
+
 /**
  *
  * @param userId
  * @route /api/users/:userId
  * @method GET
+ * @description get's a specific user profile.
  * @returns
  */
 const get_user_profile = async (userId: Types.ObjectId) => {
   try {
-    const user = await User.findOne({ _id: userId })
-      .populate("followers", "username, _id")
-      .populate("following", "username, _id")
-      .select("-email");
+    const user = await User.findOne({ _id: userId }).select(
+      "-tweets, -bookmarks"
+    );
     if (!user) {
       return {
         status: "failed",
@@ -32,6 +34,7 @@ const get_user_profile = async (userId: Types.ObjectId) => {
     console.error(err);
     return {
       status: "failed",
+      user: null,
       message: "failed to find user's profile.",
     };
   }
@@ -42,21 +45,24 @@ const get_user_profile = async (userId: Types.ObjectId) => {
  * @param userId
  * @method GET
  * @route /api/users/:userId/followers
+ * @description gets the followers for a specific user.
  * @returns
  */
 const get_user_followers = async (userId: Types.ObjectId) => {
   try {
     const userFollowers = await User.findById({ id: userId })
-      .populate("followers", "username, _id")
+      .populate("followers", "username, _id, displayName, profileImgUrl")
       .select("followers");
     if (!userFollowers) {
       return {
+        status: "failed",
         user: userId,
         followers: [],
         messsage: "could not find any followers",
       };
     }
     return {
+      status: "success",
       user: userId,
       followers: userFollowers,
       messsage: "the users followers.",
@@ -74,12 +80,13 @@ const get_user_followers = async (userId: Types.ObjectId) => {
  * @param userId
  * @method GET
  * @route /api/users/:userId/following
+ * @description gets the users that a specific user follows.
  * @returns
  */
 const get_user_following = async (userId: Types.ObjectId) => {
   try {
     const userFollowing = await User.findById(userId)
-      .populate("following", "username, _id")
+      .populate("following", "username, _id, displayName, profileImgUrl")
       .select("following");
     if (!userFollowing) {
       return {
@@ -109,7 +116,9 @@ const get_user_following = async (userId: Types.ObjectId) => {
  * @param userId
  * @method GET
  * @route /api/users/:userId/follower-suggestion
+ * @description generates followers suggestion for a specific user.
  * @returns
+ * 
  */
 const get_user_follower_suggestion = async (userId: Types.ObjectId) => {
   // controls the max suggestion.
@@ -184,6 +193,7 @@ const get_user_follower_suggestion = async (userId: Types.ObjectId) => {
  * @method GET
  * @route /api/users/:userId/tweets?pageSize=:pageSize&page=:page
  * @returns
+ * @description gets a paginated list of all the tweets for a specific user.
  */
 const get_user_tweets = async (
   userId: Types.ObjectId,
@@ -227,6 +237,7 @@ const get_user_tweets = async (
  * @method PUT
  * @route /api/users/:userId/bookmarks
  * @returns
+ * @description adds a tweet to a specific user bookmarks.
  */
 const add_to_user_bookmarks = async (
   userId: Types.ObjectId,
@@ -247,8 +258,9 @@ const add_to_user_bookmarks = async (
         message: "tweet not found!",
       };
     }
-    tweet.bookmarks.push(userId);
-    user.bookmarks.push(tweetId);
+    tweet.bookmarks.unshift(userId);
+    tweet.tweetScore = calculateTweetScore(tweet);
+    user.bookmarks.unshift(tweetId);
     await tweet.save();
     await user.save();
     return {
@@ -256,6 +268,8 @@ const add_to_user_bookmarks = async (
       tweet,
       bookmarksForTweets: tweet.bookmarks.length,
       bookmarksForUser: user.bookmarks.length,
+      userId,
+      tweetId,
     };
   } catch (err) {
     if (err instanceof Error) {
@@ -273,6 +287,7 @@ const add_to_user_bookmarks = async (
  * @method GET
  * @route /api/users/:userId/bookmarks
  * @returns
+ * @description gets all the bookmarks for a specific user.
  */
 const get_user_bookmarks = async (
   userId: Types.ObjectId,
@@ -317,6 +332,7 @@ const get_user_bookmarks = async (
  * @param userId
  * @method DELETE
  * @route /api/users/:userId/bookmarks/:tweetId
+ * @description deletes a bookmark for a specific user.
  * @returns
  */
 const delete_from_user_bookmarks = async (
@@ -352,13 +368,16 @@ const delete_from_user_bookmarks = async (
     );
     // save responses
     await user.save();
+    tweet.tweetScore = calculateTweetScore(tweet);
     await tweet.save();
     // return response
     return {
       status: "success",
       message: "successfully removed bookmark",
       bookmarksForTweet: tweet.bookmarks,
-      bookmarksForUser: user.bookmarks
+      bookmarksForUser: user.bookmarks,
+      tweetId,
+      userId,
     };
   } catch (err) {
     if (err instanceof Error) {
@@ -376,6 +395,7 @@ const delete_from_user_bookmarks = async (
  * @method GET
  * @route /api/users/?searchTerm=:searchTerm&pageSize=:pageSize&page=:page&sortBy=:sortBy
  * @returns
+ * @description gets the users in the db based on a search parameter returns a paginated list, allows for sorting as well.
  */
 const get_users = async (
   searchTerm = "",
@@ -395,12 +415,17 @@ const get_users = async (
     const users = await User.find(searchQuery ? q : {})
       .limit(pageSize)
       .skip(skipAmount)
-      .select("-password, -bookmarks, -followers, -following, -email")
+      .select(
+        "-tweets -bookmarks -following -email -profileCoverUrl -bio -joinedAt"
+      )
       .sort({ _id: sortOrder });
     if (!users) {
       return {
         status: "failed",
         message: "no user found",
+        users: [],
+        pageNumber,
+        totalPages: 0,
       };
     }
     return {
@@ -417,6 +442,9 @@ const get_users = async (
       return {
         status: "failed",
         message: "failed to  search for user's.",
+        users: [],
+        pageNumber,
+        totalPages: 0,
       };
     }
   }
@@ -426,6 +454,7 @@ const get_users = async (
  * @param userId
  * @method PUT
  * @route /api/users/:userId
+ * @description edits a specific user's profile.
  * @returns
  */
 const update_user_profile = async (
@@ -445,9 +474,7 @@ const update_user_profile = async (
 ) => {
   try {
     // validate the user Payload before calling this function
-    const foundUser = await User.findById(userId).select(
-      "bio, email, username, profileImgUrl, profileCoverUrl"
-    );
+    const foundUser = await User.findById(userId).select("-tweets, -bookmarks");
     if (!foundUser)
       return {
         status: "failed",
@@ -480,6 +507,7 @@ const update_user_profile = async (
  * @param userId
  * @method PUT
  * @route /api/users/:userId/follow
+ * @description allows for following and unfollowing a specific user.
  * @returns
  */
 const follow_user = async (
@@ -488,33 +516,54 @@ const follow_user = async (
 ) => {
   try {
     // look for the user , check if the user is already following
-    const foundUser = await User.findById({ id: userId });
-    const newFollower = await User.findById({ id: newFollowerId });
-    if (!foundUser || !newFollower) return null;
-    const isFollowing = foundUser.followers.indexOf(newFollowerId);
+    const foundUser = await User.findById(userId);
+    const newFollower = await User.findById(newFollowerId);
+    if (!foundUser || !newFollower) {
+      return {
+        status: "failed",
+        message: "invalid user id's",
+      };
+    }
+    const followerIndex = foundUser.followers.indexOf(newFollowerId);
+    const followingIndex = newFollower.following.indexOf(userId);
+    const isFollowing = followerIndex !== -1 && followingIndex !== -1;
     // if the user is already following unfollow
-    if (isFollowing !== -1) {
-      foundUser.followers.splice(isFollowing, 1);
-      newFollower.following.splice(isFollowing, 1);
+    if (isFollowing) {
+      foundUser.followers.splice(followerIndex, 1);
+      newFollower.following.splice(followingIndex, 1);
     } else {
       foundUser.followers.push(newFollowerId);
       newFollower.following.push(userId);
+      const notification = new Notification({
+        parentUser: foundUser._id,
+        actionUser: newFollower._id,
+        message: "followed",
+      });
+      await notification.save();
     }
     await foundUser.save();
     await newFollower.save();
     return {
-      success: true,
+      status: "success",
       message: isFollowing
         ? "successfully unfollowed the user"
         : "successfully followed the user.",
     };
   } catch (err) {
     return {
-      success: false,
+      status: "failed",
       message: "an error occured while trying to follow",
     };
   }
 };
+/**
+ * 
+ * @param userId 
+ * @route /api/users/:userId
+ * @method DELTE
+ * @description deletes a specific user account.
+ * @returns 
+ */
 const delete_user_profile = async (userId: Types.ObjectId) => {
   try {
     // Delete the user
@@ -522,7 +571,8 @@ const delete_user_profile = async (userId: Types.ObjectId) => {
 
     // Delete all tweets linked to the user through the author property
     await Tweet.deleteMany({ author: userId });
-
+    // Delete all comments linked to the user
+    // Delete all notifications linked to the user
     return {
       status: "success",
       message: "User profile and linked tweets deleted successfully.",
@@ -536,7 +586,17 @@ const delete_user_profile = async (userId: Types.ObjectId) => {
     };
   }
 };
-
+/**
+ * @todo implement functionality
+ * @param userId 
+ * @param secretKey
+ * @route /api/users/:userId/verify
+ * @method PUT
+ * @description verifies a user if they have the secret key.
+ */
+const verify_user = async (userId: Types.ObjectId, secretKey: string) => {
+  return("Verified")
+};
 export {
   get_users,
   get_user_follower_suggestion,
@@ -549,5 +609,6 @@ export {
   get_user_tweets,
   add_to_user_bookmarks,
   get_user_bookmarks,
-  delete_from_user_bookmarks
+  delete_from_user_bookmarks,
+  verify_user
 };
