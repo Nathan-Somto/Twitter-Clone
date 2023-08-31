@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from "react";
 import {
   Form,
   FormControl,
@@ -6,73 +6,154 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import { Textarea } from '@/components/ui/textarea';
-import CommentValidation from '@/lib/validations/comments';
+import { Textarea } from "@/components/ui/textarea";
+import CommentValidation from "@/lib/validations/comments";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useForm } from 'react-hook-form';
-import { Button } from '@/components/ui/button';
-import Image from 'next/image';
+import { useForm } from "react-hook-form";
+import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import { useSession } from "next-auth/react";
+import { CustomSession } from "@/types";
+import axios from "axios";
+import { useDispatch } from "react-redux";
+import {
+  Replies,
+  addCommentToTweet,
+  addReplyToComment,
+  Comment,
+} from "@/features/tweets/tweetsSlice";
+import { toast } from "@/components/ui/use-toast";
+import Loader from "@/components/ui/loader";
 
 type Props = {
-    forComment?:boolean;
-    forReply?:boolean;
-    tweetId?:string;
-    commentId?:string;
-    authorId: string;
-    authorImage:string;
-}
+  forComment?: boolean;
+  forReply?: boolean;
+  tweetId?: string;
+  commentId?: string;
+};
 
-function CommentBox({tweetId,commentId, authorId,forReply, forComment, authorImage}: Props) {
+function CommentBox({ tweetId, commentId, forReply, forComment }: Props) {
+  const { data: session } = useSession();
+  const [loading, setLoading] = useState<boolean>(false);
+  const dispatch = useDispatch();
   const onSubmit = async (values: z.infer<typeof CommentValidation>) => {
+    setLoading(true);
+    try {
+      console.log(values);
+      if (forReply) {
+        const response = await axios.post(
+          `/api/comment/${commentId}/replies`,
+          values
+        );
+        console.log(response.data)
+        if (response.data?.status !== "success") {
+          throw new Error(response.data);
+        }
+        dispatch(
+          addReplyToComment({
+            comment_id: commentId ?? "",
+            reply: response.data.reply as Replies,
+          })
+        );
+      } else {
+        const response = await axios.post(`/api/comment`, values);
+        if (response.data?.status !== "success") {
+          throw new Error(response.data);
+        }
+        dispatch(addCommentToTweet(response.data.comment as Comment));
+      }
+      toast({
+        description: `successfully added ${forReply ? "reply" : "comment"} to ${
+          forReply ? "comment" : "tweet"
+        }.`,
+      });
+    } catch (err) {
+      if (err instanceof Error) {
+        console.error(err.message);
+      }
+      toast({
+        description: `failed to add ${forReply ? "reply" : "comment"} to ${
+          forReply ? "comment" : "tweet"
+        }.`,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+      form.reset();
+    }
     // if for comment call the ednpoint for adding comment to tweet.
-    console.log(values)
+    console.log(values);
   };
   const form = useForm<z.infer<typeof CommentValidation>>({
     resolver: zodResolver(CommentValidation),
     defaultValues: {
       text: "",
-      author: authorId,
+      author: (session as CustomSession)?.user?.id ?? "",
       tweetId: tweetId ?? "",
-      parentComment:commentId ?? ""
+      parentComment: commentId ?? "",
     },
   });
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}className="border-b dark:border-b-dark4 px-5 py-3">   
-      <FormField
-            control={form.control}
-            name="text"
-            render={({ field }) => (
-              <FormItem className="flex w-full  gap-3">
-                <FormControl>
-                  <>
-                  <figure className={`relative ${forComment ? 'h-12 w-12':"h-9 w-9"} rounded-full border-2 flex-shrink-0 border-primaryBlue border-solid overflow-hidden`}>
-                    <Image
-                    src={authorImage}
-                    alt="profile image"
-                    fill
-                    className="object-cover"
-                    />
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="border-b dark:border-b-dark4 px-5 py-3"
+      >
+        <FormField
+          control={form.control}
+          name="text"
+          render={({ field }) => (
+            <FormItem className="flex w-full  gap-3">
+              <FormControl>
+                <>
+                  <figure
+                    className={`relative ${
+                      forComment ? "h-12 w-12" : "h-9 w-9"
+                    } rounded-full border-2 flex-shrink-0 border-primaryBlue border-solid overflow-hidden`}
+                  >
+                    {(session as CustomSession)?.user?.image ? (
+                      <Image
+                        src={(session as CustomSession)?.user?.image as string}
+                        alt="profile image"
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <Image
+                        src={"/profile.svg"}
+                        alt="profile image"
+                        fill
+                        className="object-cover"
+                      />
+                    )}
                   </figure>
                   <Textarea
                     rows={10}
-                    className={`no-focus !border-none ${forComment ?'h4-medium placholder:h4-medium h-[100px]':'h-[60px] !min-h-[60px] base-medium'} !bg-transparent resize-none`}
+                    className={`no-focus !border-none ${
+                      forComment
+                        ? "md:h4-medium base-medium md:placeholder-base-medium md:placholder:h4-medium h-[100px]"
+                        : "h-[60px] !min-h-[60px] base-medium"
+                    } !bg-transparent resize-none`}
                     placeholder="Add your reply..."
                     {...field}
                   />
-                  <Button type="submit" className="w-[77px] flex-shrink-0 self-end h-[39px]">
-                  Reply
-                </Button>
-                  </>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}/>
-           
-        </form>
+                  <Button
+                    type="submit"
+                    disabled={loading}
+                    className="w-[77px] flex-shrink-0 self-end h-[39px]"
+                  >
+                    {loading ? <Loader size="sm" /> : "Reply"}
+                  </Button>
+                </>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </form>
     </Form>
-  )
+  );
 }
 
-export default CommentBox
+export default CommentBox;
