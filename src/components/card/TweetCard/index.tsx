@@ -7,7 +7,6 @@ import { CustomSession } from "@/types";
 import { useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useDispatch } from "react-redux";
-import Loader from "@/components/ui/loader";
 import axios from "axios";
 import { toast } from "@/components/ui/use-toast";
 interface Props extends Tweet {
@@ -66,23 +65,22 @@ function TweetCard({
   const handleLike = async () => {
     setIsLoading((prevState) => ({ ...prevState, like: true }));
     try {
+      // Optimistic Update
+       // dispatch to the redux store.
+      if(hasLiked){
+        dispatch(likeTweet({_id: (session as CustomSession)?.user?.id ?? '', index, remove: true}))
+      }
+      else {
+        dispatch(likeTweet({_id: (session as CustomSession)?.user?.id ?? '', index, remove: false}))
+      }
       // call the toggle like endpoint
       const response = await axios.put(
         `/api/users/${(session as CustomSession)?.user?.id}/tweet/${_id}/like`
       );
       console.log(response.data);
-      if (response.data?.status === "success") {
-        // dispatch to the redux store.
-        dispatch(likeTweet({_id: response.data.userId as string, index, remove: !response.data.liked as boolean}))
-        // show a toast of success
-        toast({
-          description: `successfully ${
-            response.data.liked ? "liked" : "unliked"
-          } ${author.username ?? ''} tweet`,
-        });
-      } else {
+      if (response.data?.status !== "success") {
         throw new Error(response.data);
-      }
+      } 
     } catch (err) {
       console.error((err as unknown as Error).message);
       toast({
@@ -90,31 +88,37 @@ function TweetCard({
           author.username ?? ''
         } tweet`,
       });
-    } finally {
-      setIsLoading((prevState) => ({ ...prevState, like: false }));
+      if(hasLiked){
+        dispatch(likeTweet({_id: (session as CustomSession)?.user?.id ?? '', index, remove: true}))
+      }
+      else {
+        dispatch(likeTweet({_id: (session as CustomSession)?.user?.id ?? '', index, remove: false}))
+      }
     }
+    finally{
+      setIsLoading((prevState) => ({ ...prevState, like: false }));
+    } 
   };
   const handleBookmark = async () => {
     setIsLoading((prevState) => ({ ...prevState, bookmark: true }));
+    const isBookmarkPage = Router.pathname.includes("bookmark");
     try {
       // if the user has bookmarked call delete from user bookmarks endpoint.
       if (hasBookmarked) {
+          // optimistic update.
+          // unbookmark as per usual
+          dispatch(bookmarkTweet({index, _id: (session as CustomSession)?.user?.id ?? '', remove: true}));
+        
         const response = await axios.delete(
           `/api/users/${(session as CustomSession)?.user?.id}/bookmarks/${_id}`  
         );
         if (response.data?.status === "success") {
+          // we cant go back once we have done this so that is why it cannot be optimistically done.
           // if bookmark page remove tweet from page
-          if (Router.pathname.includes("bookmark")) {
+          if (isBookmarkPage) {
             // call delete tweet function on dispatch
             dispatch(deleteTweet({_id,index}));
-          } else 
-          {
-            // unbookmark as per usual
-            dispatch(bookmarkTweet({index, _id: response.data.userId as string, remove: true}));
           }
-          toast({
-            description: `successfully unbookmarked ${author.username ?? ''} tweet.`,
-          });
         } else {
           throw new Error(response.data);
         }
@@ -128,16 +132,19 @@ function TweetCard({
         if (response.data?.status === "success") {
           // update the bookmark prop for tweet.
           dispatch(bookmarkTweet({index,  _id: response.data.userId as string, remove: false}));
-          // show toast of success.
-          toast({
-            description: `successfully bookmarked ${author.username ?? ''} tweet.`,
-          });
         } else {
           throw new Error(response.data);
         }
       }
     } catch (err) {
       console.error((err as unknown as Error).message);
+      // we optimistically updated a delete we should put it back
+      if(hasBookmarked){
+        dispatch(bookmarkTweet({index, _id: (session as CustomSession)?.user?.id ?? '', remove: true}));
+      }
+      else{
+        dispatch(bookmarkTweet({index,  _id: (session as CustomSession)?.user?.id ?? '', remove: false}));
+      }
       toast({
         description: `failed to ${hasBookmarked ? "unbookmark" : "bookmark"} ${
           author.username
@@ -153,6 +160,8 @@ function TweetCard({
     try {
       // think about if the user has retweeted he/she has created a new tweet. so you have to go to your profile to delete the tweet.
       if (!hasReTweeted) {
+        // update reTweet count
+        dispatch(reTweet({_id: (session as CustomSession)?.user?.id ?? '', index, remove:false}));
         // create the tweet with the info. pass originalTweetId.
         const response = await axios.post(
           `/api/users/${(session as CustomSession)?.user?.id}/tweet/retweet`,
@@ -164,17 +173,15 @@ function TweetCard({
           if (Router.pathname === "/home") {
             dispatch(addNewTweet(response.data.reTweet as Tweet));
           }
-          // update reTweet count
-          dispatch(reTweet({_id: response.data.author as string, index}));
-          // show a toast of success.
-          toast({
-            description: `successfully retweeted ${author.username} tweet.`,
-          });
         } else {
           throw new Error(response.data);
         }
       }
     } catch (err) {
+      dispatch(reTweet({
+        index, remove: true,
+        _id: undefined
+      }));
       console.error((err as unknown as Error).message);
       toast({
         description: `failed to retweet ${author.username} tweet.`,
@@ -286,11 +293,7 @@ function TweetCard({
               e.stopPropagation();
               await handleRetweet();
             }}
-          >
-            {isLoading.retweet ? (
-              <Loader size="sm" />
-            ) : (
-              <>
+          >      
                 <div className="rounded-full p-2 transition-all ease-in-out duration-250 flex justify-center group opacity-75 hover:bg-[#13e29d1a] hover:dark:bg-[#13aa751a] items-center">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -301,7 +304,6 @@ function TweetCard({
                 >
                   <path
                     d="M17.8274 9.7525C17.6084 9.53275 17.2522 9.53275 17.0324 9.7525L15.3674 11.4175V3.7375C15.3674 2.1865 14.1052 0.924997 12.5549 0.924997H8.16742C7.85692 0.924997 7.60492 1.177 7.60492 1.4875C7.60492 1.798 7.85692 2.05 8.16742 2.05H12.5549C13.4849 2.05 14.2424 2.8075 14.2424 3.7375V11.4175L12.5774 9.7525C12.3577 9.53275 12.0014 9.53275 11.7824 9.7525C11.5634 9.97225 11.5619 10.3285 11.7824 10.5475L14.4074 13.1725C14.5162 13.2827 14.6602 13.3375 14.8049 13.3375C14.9497 13.3375 15.0922 13.2835 15.2024 13.1725L17.8274 10.5475C18.0479 10.3285 18.0479 9.97225 17.8274 9.7525ZM9.83242 12.2125H5.44492C4.51492 12.2125 3.75742 11.455 3.75742 10.525V2.845L5.42242 4.51C5.53342 4.62025 5.67742 4.675 5.82142 4.675C5.96542 4.675 6.10942 4.62025 6.21892 4.51C6.43867 4.29025 6.43867 3.934 6.21892 3.715L3.59392 1.09C3.37417 0.869497 3.01792 0.869497 2.79892 1.09L0.17392 3.715C-0.0465801 3.934 -0.0465801 4.29025 0.17392 4.51C0.39442 4.72975 0.74917 4.72975 0.96892 4.51L2.63392 2.845V10.525C2.63392 12.076 3.89617 13.3375 5.44642 13.3375H9.83392C10.1444 13.3375 10.3964 13.0855 10.3964 12.775C10.3964 12.4645 10.1437 12.2125 9.83392 12.2125H9.83242Z"
-                    /*  fill="#8899A6" */
                     className={`${
                       
                       hasReTweeted ? "dark:!fill-[#008559] !fill-[#17bf63]" : "!fill-[#8899A6]"
@@ -317,8 +319,7 @@ function TweetCard({
                 >
                   {formatNumber(retweets.length)}
                 </span>
-              </>
-            )}
+             
           </button>
           {/* Likes */}
           <button
@@ -331,9 +332,7 @@ function TweetCard({
           >
             <div className="rounded-full p-2 transition-all ease-in-out duration-250 flex justify-center group opacity-75 hover:bg-[#f918801a] hover:dark:bg-[#57183599] items-center">
 
-            {isLoading.like ? (
-              <Loader size="sm" />
-            ) : hasLiked ? (
+            { hasLiked ? (
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
@@ -343,7 +342,7 @@ function TweetCard({
               >
                 <path
                   d="M7.9999 14.2285H7.9894C6.05215 14.1925 0.462402 9.14203 0.462402 4.35853C0.462402 2.06053 2.35615 0.0430298 4.51465 0.0430298C6.23215 0.0430298 7.38715 1.22803 7.99915 2.09053C8.60965 1.22953 9.76465 0.0430298 11.4829 0.0430298C13.6429 0.0430298 15.5359 2.06053 15.5359 4.35928C15.5359 9.14128 9.9454 14.1918 8.00815 14.227H7.9999V14.2285Z"
-                  className="fill-[#e0245e] dark:fill-[#ff82bc] group-hover:fill-[#e0245e] dark:group-hover:fill-[#ff82bc]"
+                  className="fill-[#e0245e]  group-hover:fill-[#e0245e] "
                 />
               </svg>
             ) : (
@@ -356,7 +355,7 @@ function TweetCard({
                 width="18px"
                 height="14px"
                 viewBox="0 0 600.824 600.824"
-                className="fill-[#8899A6] group-hover:fill-[#e0245e] dark:group-hover:fill-[#ff82bc]"
+                className="fill-[#8899A6] group-hover:fill-[#e0245e] "
               >
                 <g>
                   <g>
@@ -367,7 +366,7 @@ function TweetCard({
             )}
             </div>
             <span
-              className={`${hasLiked ? "dark:text-[#ff82bc] text-[#e0245e]" : ""} small-regular`}
+              className={`${hasLiked ? "text-[#e0245e]" : ""} small-regular`}
             >
               {formatNumber(likes.length)}
             </span>
@@ -381,10 +380,7 @@ function TweetCard({
               await handleBookmark();
             }}
           >
-            {isLoading.bookmark ? (
-              <Loader size="sm" />
-            ) : (
-              <>
+        
               <div className="rounded-full p-2 transition-all ease-in-out duration-250 flex justify-center group opacity-75 hover:bg-[#158cd11a] hover:dark:bg-[#1c455f70] items-center"> 
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -408,8 +404,6 @@ function TweetCard({
                 >
                   {formatNumber(bookmarks.length)}
                 </span>
-              </>
-            )}
           </button>
         </div>
         {!isTweetPage && comments.length ? (
