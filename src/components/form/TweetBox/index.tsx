@@ -40,7 +40,7 @@ function TweetBox() {
   const { data: session } = useSession();
   const [isPending, startTransition] = useTransition()
   const [showEmojiPicker, setEmojiPicker] = useState<boolean>(false);
-  const [status, setStatus] = useState<string>('');
+  const [status, setStatus] = useState<string>('Everyone');
   const [emojiPickerObject, setEmojiPickerObject] = useState<EmojiClickData | null>(null);
   const [imgUrl, setImgUrl] = useState<string>("");
   const [imgFile, setImgFile] = useState<File[]>([]);
@@ -56,13 +56,14 @@ function TweetBox() {
       imgUrls: [],
     },
   });
+   
  const disableButton = form.getValues('text').length < 3 || isLoading;
   const onSubmit = useCallback(async (values: z.infer<typeof TweetValidation>) => {
     setIsLoading(true);
     try {
-      console.log(values);
       // modify isPublic based on user selection.
       values.isPublic = status === "Everyone";
+      console.log(values);
       // check if user is logged in
       if (!(session as CustomSession)?.user?.id || values.author === "1234") {
         throw new Error("The User must be logged in before you can tweet.");
@@ -111,7 +112,8 @@ function TweetBox() {
       }
     }
     finally{
-    setIsLoading(false)
+    setIsLoading(false);
+    form.reset()
     }
   },[dispatch, imgFile, session, status]);
   function handleEmojiClick(emojiDataObj: EmojiClickData, _: MouseEvent) {
