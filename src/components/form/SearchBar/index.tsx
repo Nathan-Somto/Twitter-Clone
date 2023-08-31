@@ -1,19 +1,31 @@
 import { useRouter } from "next/router";
 import React, { FormEvent, useState } from "react";
 
-type Props = {};
+type Props = {
+  isSearchPage: true;
+  filterResult: (str: string) => void;
+} |
+{
+  isSearchPage: false;
+  filterResult?:never;
+}
 
-function Searchbar({}: Props) {
+function Searchbar({isSearchPage,filterResult}: Props) {
   const [searchTerm, setSearchTerm] = useState("");
   const Router = useRouter();
   function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    Router.push(`/search?searchTerm=${searchTerm}`);
+    if(!isSearchPage){
+      Router.push(`/search?searchTerm=${searchTerm}`);
+    }
+    else {
+      filterResult(searchTerm);
+    }
   }
   return (
     <form
       onSubmit={onSubmit}
-      className="w-[90%] min-w-[100px] bg-light3  flex items-center py-5  rounded-full h-[40px]  px-4 dark:bg-dark3"
+      className={`w-[90%] min-w-[100px] bg-light3  flex items-center py-5  rounded-full ${isSearchPage ? 'h-[45px]':'h-[40px]'}  px-4 dark:bg-dark3`}
     >
       <div className="flex items-center">
         <button type="submit" className="w-[30px] h-[30px] flex items-center">

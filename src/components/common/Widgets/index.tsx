@@ -13,7 +13,7 @@ function Widgets({}: Props) {
   return (
     <div className=" hidden space-y-8 px-[10px] min-w-[310px] py-4 lg:flex flex-col h-screen overflow-auto">
        {!isSearchPage && (
-         <SearchBar/>
+         <SearchBar isSearchPage={false}/>
        ) 
         }
         {isHomePage && (
