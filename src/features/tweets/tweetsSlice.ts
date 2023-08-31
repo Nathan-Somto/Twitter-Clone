@@ -31,7 +31,6 @@ export interface Tweet {
   retweets: string[];
   bookmarks: string[];
   isPublic: boolean;
-  
 }
 
 export interface TweetState {
@@ -62,9 +61,22 @@ type updateLikesAction = {
 type updateBooksmarkAction = updateLikesAction;
 type reTweetAction = {
   type: string;
+  payload:
+    | {
+        index: number;
+        remove: true;
+        _id: undefined;
+      }
+    | {
+        index: number;
+        _id: string;
+        remove: false;
+      };
+};
+type deleteTweetAction = {
+  type: string;
   payload: Omit<updateLikesAction["payload"], "remove">;
 };
-type deleteTweetAction = reTweetAction;
 type AddCommentAction = {
   type: string;
   payload: Comment;
@@ -154,8 +166,13 @@ export const tweetSlice = createSlice({
     },
     reTweet: (state, action: reTweetAction) => {
       // you can't remove a retweet unless you delete the actual tweet was retweeted.
-      const { _id, index } = action.payload;
-      state.tweets[index].retweets.push(_id);
+      // the removal is just for optimistic updates when it fails.
+      const { _id, index, remove } = action.payload;
+      if (remove) {
+        state.tweets[index].retweets.shift();
+      } else {
+        state.tweets[index].retweets.unshift(_id);
+      }
       state.tweets[index].tweetScore = calculateTweetScore(state.tweets[index]);
     },
     bookmarkTweet: (state, action: updateBooksmarkAction) => {
@@ -223,13 +240,15 @@ export const {
   setRepliesToComment,
   deleteCommentfromTweet,
   deleteReplyToComment,
-  addReplyToComment
+  addReplyToComment,
 } = tweetSlice.actions;
-export const selectTweet = (state:RootState) => state.tweets.tweets;
-export const selectReplies = (state:RootState,comment_id: string) => {
-  const comment = (state.tweets.tweets[0].comments as Comment[]).find((comment) => comment._id === comment_id);
-  if(comment) return comment.replies;
+export const selectTweet = (state: RootState) => state.tweets.tweets;
+export const selectReplies = (state: RootState, comment_id: string) => {
+  const comment = (state.tweets.tweets[0].comments as Comment[]).find(
+    (comment) => comment._id === comment_id
+  );
+  if (comment) return comment.replies;
   return [];
-}
+};
 export const selectTweets = (state: RootState) => state.tweets;
 export default tweetSlice.reducer;
