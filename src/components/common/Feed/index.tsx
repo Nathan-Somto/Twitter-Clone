@@ -44,9 +44,9 @@ function Feed({ fetchMoreTweets, loading, noMoreTweets }: Props) {
     },
     []
   );
-  console.log(filteredTweets(tweets, selectedFilter));
+
   return (
-    <section className="border-t dark:border-t-dark4">
+    <section className="border-t dark:border-t-dark4 pb-[75px] md:pb-0">
       {filteredTweets(tweets, selectedFilter).map(
         ({ tweet, originalIndex }) => (
           <TweetCard
@@ -57,11 +57,7 @@ function Feed({ fetchMoreTweets, loading, noMoreTweets }: Props) {
           />
         )
       )}
-      {noMoreTweets ? (
-        <div>
-          <p className="h4-medium !font-semibold opacity-80 text-center mt-4">No more Tweets</p>
-        </div>
-      ) : (
+      {noMoreTweets ? null : (
         <div>
           {loading ? (
             /* custom loader */
