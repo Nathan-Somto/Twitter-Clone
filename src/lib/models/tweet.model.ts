@@ -3,7 +3,7 @@ import { ITweet } from "@/types";
 const TweetSchema = new mongoose.Schema<ITweet>({
   author: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "user",
+    ref: "users",
     required: true,
   },
   text: {

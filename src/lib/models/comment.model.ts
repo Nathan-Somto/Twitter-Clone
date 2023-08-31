@@ -2,7 +2,7 @@ import { IComment } from "@/types";
 import mongoose from "mongoose";
 
 const CommentSchema = new mongoose.Schema<IComment>({
-  author: { type: mongoose.Schema.Types.ObjectId, ref: "user", required: true },
+  author: { type: mongoose.Schema.Types.ObjectId, ref: "users", required: true },
   text: { type: String, maxlength: 280, required: true },
   createdAt: { type: Date, default: Date.now() },
   tweetId: {
