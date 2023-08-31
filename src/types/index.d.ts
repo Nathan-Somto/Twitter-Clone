@@ -12,7 +12,7 @@ interface IUser {
     isVerified: boolean,
     bio: string,
     onBoarded: boolean,
-    joinedAt?:Date;
+    joinedAt?:Date,
     tweets: mongoose.Types.ObjectId[],
     bookmarks: mongoose.Types.ObjectId[]
 }
@@ -38,6 +38,14 @@ interface IComment {
     parentComment?: mongoose.Types.ObjectId,
     replies: mongoose.Types.ObjectId[]
 }
+interface INotification {
+    message: 'followed' | 'liked' | 'commented' | 'retweeted',
+    parentUser: mongoose.Types.ObjectId,
+    actionUser: mongoose.Types.ObjectId,
+    read:boolean,
+    tweetId: mongoose.Types.ObjectId,
+    createdAt: Date
+}
 interface CustomSession extends Session {
     user?:{
     onBoarded?: boolean | null;
@@ -48,4 +56,4 @@ interface CustomSession extends Session {
     image?: string | null | undefined;
    } | undefined
 }
-export {IUser, ITweet, IComment, CustomSession}
+export {IUser, ITweet, IComment,INotification, CustomSession}
