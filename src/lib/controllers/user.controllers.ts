@@ -16,7 +16,7 @@ import calculateTweetScore from "../utils/calculateTweetScore";
 const get_user_profile = async (userId: Types.ObjectId) => {
   try {
     const user = await User.findOne({ _id: userId }).select(
-      "-tweets, -bookmarks"
+      "-email -bookmarks"
     );
     if (!user) {
       return {
@@ -51,8 +51,9 @@ const get_user_profile = async (userId: Types.ObjectId) => {
 const get_user_followers = async (userId: Types.ObjectId) => {
   try {
     const userFollowers = await User.findById({ id: userId })
-      .populate("followers", "username, _id, displayName, profileImgUrl")
+      .populate("followers", "username _id displayName followers profileImgUrl isVerified")
       .select("followers");
+    console.log(userFollowers);
     if (!userFollowers) {
       return {
         status: "failed",
@@ -64,7 +65,7 @@ const get_user_followers = async (userId: Types.ObjectId) => {
     return {
       status: "success",
       user: userId,
-      followers: userFollowers,
+      followers: userFollowers.followers,
       messsage: "the users followers.",
     };
   } catch (err) {
@@ -86,8 +87,9 @@ const get_user_followers = async (userId: Types.ObjectId) => {
 const get_user_following = async (userId: Types.ObjectId) => {
   try {
     const userFollowing = await User.findById(userId)
-      .populate("following", "username, _id, displayName, profileImgUrl")
+      .populate("following", "username _id displayName followers profileImgUrl isVerified")
       .select("following");
+    console.log(userFollowing);
     if (!userFollowing) {
       return {
         status: "failed",
@@ -99,7 +101,7 @@ const get_user_following = async (userId: Types.ObjectId) => {
     return {
       status: "success",
       user: userId,
-      following: userFollowing,
+      following: userFollowing.following,
       messsage: "the users following.",
     };
   } catch (err) {
@@ -118,7 +120,7 @@ const get_user_following = async (userId: Types.ObjectId) => {
  * @route /api/users/:userId/follower-suggestion
  * @description generates followers suggestion for a specific user.
  * @returns
- * 
+ *
  */
 const get_user_follower_suggestion = async (userId: Types.ObjectId) => {
   // controls the max suggestion.
@@ -130,7 +132,7 @@ const get_user_follower_suggestion = async (userId: Types.ObjectId) => {
     // if the user has no followers. find 10 users that are not the user
     if (user.followers.length === 0) {
       const possibleSuggestions = await User.find({ _id: { $ne: userId } })
-        .select("-password, -bookmarks, -followers, -following, -email")
+        .select(" -bookmarks -followers -email -tweets")
         .limit(10);
       if (possibleSuggestions.length === 0) {
         return {
@@ -152,7 +154,7 @@ const get_user_follower_suggestion = async (userId: Types.ObjectId) => {
       const possibleSuggestions = await User.find({
         _id: { $nin: [...user.followers, userId] },
       })
-        .select("-password, -bookmarks, -followers, -following, -email")
+        .select("-bookmarks -followers -tweets -following -email")
         .limit(10);
       // when we have no suggestion
       if (possibleSuggestions.length === 0) {
@@ -202,10 +204,17 @@ const get_user_tweets = async (
 ) => {
   try {
     const user = await User.findById(userId)
+      .populate({
+        path: "tweets",
+        populate: {
+          path: "author",
+          select: "username _id displayName  profileImgUrl isVerified",
+        },
+      })
       .select("tweets")
-      .populate("tweets")
       .skip((page - 1) * pageSize)
       .limit(pageSize);
+    console.log(user);
     if (!user) {
       return {
         status: "failed",
@@ -557,12 +566,12 @@ const follow_user = async (
   }
 };
 /**
- * 
- * @param userId 
+ *
+ * @param userId
  * @route /api/users/:userId
  * @method DELTE
  * @description deletes a specific user account.
- * @returns 
+ * @returns
  */
 const delete_user_profile = async (userId: Types.ObjectId) => {
   try {
@@ -588,14 +597,14 @@ const delete_user_profile = async (userId: Types.ObjectId) => {
 };
 /**
  * @todo implement functionality
- * @param userId 
+ * @param userId
  * @param secretKey
  * @route /api/users/:userId/verify
  * @method PUT
  * @description verifies a user if they have the secret key.
  */
 const verify_user = async (userId: Types.ObjectId, secretKey: string) => {
-  return("Verified")
+  return "Verified";
 };
 export {
   get_users,
@@ -610,5 +619,5 @@ export {
   add_to_user_bookmarks,
   get_user_bookmarks,
   delete_from_user_bookmarks,
-  verify_user
+  verify_user,
 };

@@ -6,6 +6,9 @@ import Comment from "../models/comment.model";
 import mongoose, { SortOrder, Types } from "mongoose";
 import calculateTweetScore from "../utils/calculateTweetScore";
 /**
+ * @todo: find a solution for _doc prop. create an interface maybe
+ */
+/**
  * 
  * @param userId 
  * @param tweetData 
@@ -36,7 +39,9 @@ const create_tweet = async (userId: Types.ObjectId, tweetData: Pick<ITweet, 'tex
       author:{
         username: user.username,
         profileImgUrl: user.profileImgUrl,
-        _id: user._id
+        _id: user._id,
+        displayName: user.displayName,
+        isVerified: user.isVerified
       },
 
      }
@@ -64,12 +69,12 @@ const get_tweet = async (tweetId: Types.ObjectId, userId: Types.ObjectId) => {
         path: "comments",
         populate: {
           path: "author",
-          select: "username _id profileImgUrl",
+          select: "username _id profileImgUrl isVerified",
         },
       })
       .populate({
         path: "author",
-        select: "username _id profileImgUrl",
+        select: "username _id profileImgUrl isVerified",
       });
     if (!tweet) {
       return {
@@ -168,7 +173,7 @@ const get_feed_tweets = async (
       };
     }
     const tweets = await Tweet.find(query)
-      .populate("author", "username profileImgUrl displayName")
+      .populate("author", "username profileImgUrl displayName isVerified")
       .sort(sortOptions)
       .skip((page - 1) * pageSize)
       .limit(pageSize);
@@ -317,7 +322,6 @@ const retweet = async (
 ) => {
   try {
     const user = await User.findById(userId)
-      .select("tweets")
       .populate("tweets", "originalTweetId");
     if (!user) {
       return {
@@ -369,7 +373,17 @@ const retweet = async (
     await originalTweet.save();
     return {
       status: "success",
-      reTweet: newRetweet,
+      reTweet: {
+        //@ts-ignore
+        ...newRetweet._doc,
+        author:{
+          username: user.username,
+          profileImgUrl: user.profileImgUrl,
+          _id: user._id,
+          isVerified: user.isVerified,
+          displayName: user.displayName
+        },
+      },
     };
   } catch (err) {
     if(err instanceof Error){

@@ -20,7 +20,7 @@ const get_replies_to_comment = async (commentId:Types.ObjectId) => {
             path: "replies",
             populate: {
               path: "author",
-              select: "username profileImgUrl text createdAt",
+              select: "username profileImgUrl text createdAt isVerified",
             },
           })
         if(!comment) {
