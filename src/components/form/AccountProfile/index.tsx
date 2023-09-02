@@ -21,6 +21,8 @@ import Loader from "@/components/ui/loader";
 import axios from "axios";
 import { toast } from "@/components/ui/use-toast";
 import { useSession } from "next-auth/react";
+import { useDispatch,useSelector } from "react-redux";
+import { selectUser, setUser } from "@/features/users/usersSlice";
 
 interface Props {
   user: {
@@ -34,6 +36,7 @@ interface Props {
   btnTitle: string;
   headingText: string;
   forOnboarding: boolean;
+  closeModal?: ()=> void;
 }
 /**
  * @description Form that Updates the user data.
@@ -45,6 +48,7 @@ export default  function AccountProfile ({
   btnTitle,
   headingText,
   forOnboarding,
+  closeModal = ()=>{}
 }: Props) {
 
 
@@ -56,7 +60,8 @@ export default  function AccountProfile ({
   const [filesToUpload, setFilesToUpload] = useState<File[]>([]);
   const profileImageRef = useRef<HTMLInputElement | null>(null);
   const coverImageRef = useRef<HTMLInputElement | null>(null);
-
+  const dispatch = useDispatch();
+  const profile = useSelector(selectUser);
 
   const form = useForm<z.infer<typeof UserValidation>>({
     resolver: zodResolver(UserValidation),
@@ -70,8 +75,7 @@ export default  function AccountProfile ({
   });
 
   const onSubmit = async (
-    values: z.infer<typeof UserValidation>,
-    event: React.FormEvent
+    values: z.infer<typeof UserValidation>
   ) => {
     console.log(values);
     setLoading(true);
@@ -92,8 +96,8 @@ export default  function AccountProfile ({
         }
       });
 
+      //set the onboarding to true
       if (forOnboarding) {
-        //set the onboarding to true
         values.onBoarded = true;
       }
       const response = await axios.put(`/api/users/${user.id}`, values);
@@ -104,13 +108,22 @@ export default  function AccountProfile ({
       if (response.data?.issues) {
         throw new Error("check your data.");
       }
+      // if edit profile dispatch to the store.
+      if(!forOnboarding){
+        dispatch(setUser({...profile, ...values}));
+      }
+      // update the session.
       update({
         username: values.username,
         image: values.profileImgUrl,
-        onBoarded: values.onBoarded,
+        onBoarded: values.onBoarded ?? true,
       });
+      // if edit profile close the modal.
       if (forOnboarding) {
         router.push("/home");
+      }
+      else{
+        closeModal();
       }
     } catch (err) {
       if (err instanceof Error) {
@@ -176,7 +189,7 @@ export default  function AccountProfile ({
     <Form {...form}>
       <form
         className="flex flex-col justify-center min-h-screen  dark:bg-primaryBlack bg-light3 dark:text-light2 text-dark3"
-        onSubmit={(e) => form.handleSubmit((values) => onSubmit(values, e))(e)}
+        onSubmit={form.handleSubmit(onSubmit)}
       >
         <div className="max-w-[600px] w-full mx-auto px-8 py-4 space-y-10">
           <header className="text-center ">
