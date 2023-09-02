@@ -15,7 +15,7 @@ function Layout({ children }: { children: React.ReactNode }) {
       </div>
   }
   // user not logged in.
-  if(!(session as CustomSession)?.user){
+  if(!(session as CustomSession)){
     router.push('/sign-in')
   }
   // user not onboarded
@@ -23,9 +23,9 @@ function Layout({ children }: { children: React.ReactNode }) {
     router.push('/onboarding');
   }
   return (
-    <div className="grid md:grid-cols-[100px_1fr] lg:grid-cols-[275px_1fr] mx-auto h-screen w-full  dark:bg-primaryBlack bg-primaryWhite dark:text-primaryWhite">
+    <div className="grid md:grid-cols-[100px_1fr] xl:grid-cols-[275px_1fr] mx-auto h-screen w-full  dark:bg-primaryBlack bg-primaryWhite dark:text-primaryWhite">
       <SideBar />
-      <main className="grid lg:grid-cols-[1fr_310px]">
+      <main className="grid xl:grid-cols-[1fr_310px]">
         {children}
         <Widgets />
       </main>

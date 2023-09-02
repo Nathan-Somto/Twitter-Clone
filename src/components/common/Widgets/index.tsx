@@ -11,7 +11,7 @@ function Widgets({}: Props) {
   const isHomePage = router.pathname === '/home'
   
   return (
-    <div className=" hidden space-y-8 px-[10px] min-w-[310px] py-4 lg:flex flex-col h-screen overflow-auto">
+    <div className=" hidden space-y-8 px-[10px] min-w-[310px] py-4 xl:flex flex-col h-screen overflow-auto">
        {!isSearchPage && (
          <SearchBar isSearchPage={false}/>
        ) 
