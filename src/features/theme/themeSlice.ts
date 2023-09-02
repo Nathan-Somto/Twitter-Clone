@@ -1,5 +1,5 @@
+import { RootState } from '@/store';
 import { createSlice } from '@reduxjs/toolkit'
-import type { PayloadAction } from '@reduxjs/toolkit'
 
 export type Theme = "light" | "dark";
 const localTheme = typeof window !== 'undefined' ? localStorage.getItem("theme") : 'dark';
@@ -37,5 +37,5 @@ export const themeSlice = createSlice({
 
 // Action creators are generated for each case reducer function
 export const { setTheme, initializeTheme } = themeSlice.actions
-export const theme = (state: ThemeState) => state.theme;
+export const theme = (state: RootState) => state.theme.theme;
 export default themeSlice.reducer
