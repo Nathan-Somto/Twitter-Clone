@@ -25,8 +25,8 @@ export default async function handler(
     await connectDb();
     if (req.method === "PUT") {
       const response = await follow_user(
-        userId as mongoose.Types.ObjectId,
-        targetUserId as mongoose.Types.ObjectId
+        targetUserId as mongoose.Types.ObjectId,
+        userId as mongoose.Types.ObjectId
       );
       res.status(200).json(response);
     }
