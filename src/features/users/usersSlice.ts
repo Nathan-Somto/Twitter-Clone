@@ -5,7 +5,7 @@ export interface Profile {
     _id:string;
     username: string;
     email:string;
-    joinedAt: Date | string;
+    joinedAt: string;
     bio:string;
     profileImgUrl?: string;
     profileCoverUrl?: string;
@@ -13,6 +13,7 @@ export interface Profile {
     isVerified: boolean;
     followers: string[];
     following: string[];
+    tweets:string[];
 }
 type UserState =  {
     user: Profile;
@@ -36,8 +37,9 @@ const initialState:UserState = {
         email: "nturner560@gmail.com",
         followers: [],
         following: [],
+        tweets:[],
         isVerified: true,
-        joinedAt: '20-12-2023',
+        joinedAt: '2023-01-1T00:00:00.000Z',
         username: 'nathan-somto',
         profileCoverUrl: undefined,
         profileImgUrl: undefined
@@ -58,9 +60,18 @@ const UserSlice = createSlice({
             else {
                 state.user.following.unshift(_id);
             }
+        },
+        toggleFollowers: (state, action:ToggleFollowAction) => {
+            const {_id, remove} = action.payload;
+            if(remove){
+                state.user.followers = state.user.followers.filter((follower_id) => follower_id !== _id);
+            }
+            else {
+                state.user.followers.unshift(_id);
+            }
         }
     }
 });
-export const {setUser, toggleFollow} = UserSlice.actions;
+export const {setUser, toggleFollow, toggleFollowers} = UserSlice.actions;
 export const selectUser = (state:RootState) => state.user.user;
 export default UserSlice.reducer;
