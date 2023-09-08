@@ -74,7 +74,7 @@ const get_tweet = async (tweetId: Types.ObjectId, userId: Types.ObjectId) => {
       })
       .populate({
         path: "author",
-        select: "username _id profileImgUrl isVerified",
+        select: "username _id profileImgUrl isVerified displayName",
       });
     if (!tweet) {
       return {
@@ -133,7 +133,7 @@ const get_tweet = async (tweetId: Types.ObjectId, userId: Types.ObjectId) => {
  */
 const get_feed_tweets = async (
   userId: Types.ObjectId,
-  pageSize = 15,
+  pageSize = 10,
   page = 1,
   top = false,
   latest = true
@@ -355,8 +355,6 @@ const retweet = async (
       tweetScore:0,
       imgUrls: originalTweet.imgUrls
     });
-    console.log("originalTweet >> ", originalTweet);
-    console.log("new retweet>>", newRetweet)
     user.tweets.unshift(newRetweet._id);
     originalTweet.retweets.unshift(userId);
     originalTweet.tweetScore = calculateTweetScore(originalTweet);
@@ -371,6 +369,7 @@ const retweet = async (
     await newRetweet.save();
     await user.save();
     await originalTweet.save();
+    console.log("new retweet>>", newRetweet)
     return {
       status: "success",
       reTweet: {
