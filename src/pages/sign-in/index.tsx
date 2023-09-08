@@ -11,14 +11,30 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { toast } from "@/components/ui/use-toast";
 import Loader from "@/components/ui/loader";
-import { useSelector } from "react-redux";
-import { theme } from "@/features/theme/themeSlice";
+import Seo from "@/components/seo";
+import { CustomSession } from "@/types";
+import { useRouter } from "next/router";
+
+
 function SigninPage() {
-  const currentTheme = useSelector(theme);
+  const router = useRouter();
+  const {data: session, status} = useSession();
   const [isLoading, setIsLoading] = useState(false);
+  if (status === "loading") {
+    return (
+      <div className="dark:bg-primaryBlack h-screen grid place-items-center">
+        <Loader size="lg" />
+      </div>
+    );
+  }
+ 
+  // check if the user is already logged in if so push them out.
+  if ((session as CustomSession)?.user) {
+    router.push("/home");  
+  }
   // authenticate with google.
   async function handleSignIn() {
     setIsLoading(true);
@@ -39,36 +55,47 @@ function SigninPage() {
     }
   }
   return (
-    <main className="dark:bg-primaryBlack relative items-center justify-center min-h-screen flex flex-col px-[5%]  dark:text-light3 text-primaryBlack">
-      <section className="max-w-[600px]">
-        <figure className="h-[55px] w-[55px] mb-7 relative ">
-          {currentTheme === "dark" ? (
-            <Image
-              src={"/X-dark-logo.png"}
-              alt="twitter logo for dark mode"
-              fill
-              priority
-              className="object-contain"
-            />
-          ) : (
-            <Image
-              src={"/X-light-logo.png"}
-              alt="twitter logo for light mode"
-              fill
-              priority
-              className="object-contain"
-            />
-          )}
+    <>
+    <Seo
+    title="Find out what's happening on X"
+    />
+    <main className="dark:bg-primaryBlack relative bg-primaryWhite justify-center lg:justify-around items-center  min-h-screen flex  px-6  dark:text-light3 text-primaryBlack">
+      <aside>
+        <figure>
+          {/* X logo */}
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            className="max-h-[400px] max-w-[400px] w-full mx-auto hidden lg:block relative dark:fill-primaryWhite fill-primaryBlack "
+          >
+            <g>
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+            </g>
+          </svg>
         </figure>
-        <h1 className="font-semibold mb-9 text-[35px] md:text-[40px] lg:text-[50px]">
+      </aside>
+      <section className="max-w-[600px] w-full flex-shrink-0">
+        <figure className="mb-2">
+          {/* X logo */}
+        <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            className="h-[30px] w-[30px]  relative dark:fill-primaryWhite fill-primaryBlack "
+          >
+            <g>
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+            </g>
+          </svg>
+        </figure>
+        <h1 className="font-semibold mb-5 text-[48px] md:text-[60px] lg:text-[70px]">
           Happening now
         </h1>
-        <p className="h4-medium">Join today.</p>
+        <p className="font-medium opacity-[0.75] text-[17.5px] sm:text-[25px] lg:text-[35px]">Join today.</p>
         <Button
           disabled={isLoading}
           variant={"secondary"}
           onClick={handleSignIn}
-          className="w-3/4 mt-5 mb-3  !bg-light3 shadow-xl rounded-full hover:opacity-50"
+          className="w-full max-w-[300px] mt-5 mb-3  !bg-light3 shadow-xl rounded-full hover:opacity-50 md:!h-12"
         >
           {isLoading ? (
             <Loader size="sm" />
@@ -81,7 +108,7 @@ function SigninPage() {
                 height={20}
                 className="max-h-fit max-w-fit"
               />
-              <span className="text-primaryBlack ml-3 base-medium">
+              <span className="text-primaryBlack ml-3 base-medium md:!text-[16.5px]">
                 Sign up with Google
               </span>
             </>
@@ -119,6 +146,7 @@ function SigninPage() {
         </p>
       </div>
     </main>
+    </>
   );
 }
 
