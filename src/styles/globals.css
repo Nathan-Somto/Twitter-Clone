@@ -3,16 +3,11 @@
 @tailwind utilities;
 
 @layer components {
-  .sidebar {
-    @apply fixed bottom-0 md:relative left-0 md:bottom-auto w-full md:top-0 z-20 flex h-[65px] border-t border-t-light3 dark:border-t-dark4 border-r-transparent md:border-t-transparent md:h-screen  flex-col justify-between md:gap-12 overflow-visible border-r md:border-r-light3 dark:md:border-r-dark4 dark:bg-primaryBlack bg-primaryWhite px-5 pt-[0.65rem] pb-2 md:px-5 lg:px-10 md:py-6;
-  }
-
   .no-focus {
     @apply focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 !important;
   }
 
   /* Account Profile  */
-
 
   .account-form_input {
     @apply border dark:border-dark4 dark:bg-dark2 text-light2 placeholder:text-light3 py-3 px-4  rounded-lg !important;
@@ -59,7 +54,6 @@
     @apply text-[18px] font-normal leading-[140%];
   }
 
-
   .base-regular {
     @apply text-[16px] font-normal leading-[140%];
   }
@@ -87,7 +81,7 @@
   .small-semibold {
     @apply text-[14px] font-semibold leading-[140%];
   }
-  .small-bold{
+  .small-bold {
     @apply text-[14px] font-bold leading-[140%];
   }
   .subtle-medium {
