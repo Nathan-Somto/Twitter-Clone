@@ -6,6 +6,7 @@ interface Author {
   username: string;
   profileImgUrl: string;
   displayName: string;
+  isVerified: boolean;
 }
 export interface Comment {
   author: Author;

@@ -54,6 +54,7 @@ interface CustomSession extends Session {
     name?: string | null | undefined; 
     email?: string | null | undefined; 
     image?: string | null | undefined;
+    isVerified?: boolean | undefined;
    } | undefined
 }
 export {IUser, ITweet, IComment,INotification, CustomSession}

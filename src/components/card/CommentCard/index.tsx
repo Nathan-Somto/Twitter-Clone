@@ -6,7 +6,6 @@ import ReplyCard from "@/components/card/ReplyCard";
 import {
   Comment,
   Replies,
-  selectReplies,
   setRepliesToComment,
 } from "@/features/tweets/tweetsSlice";
 import { formatFromNow, formatNumber } from "@/utils";
@@ -89,7 +88,10 @@ function CommentCard({
             )}
           </Link>
           <div>
-            <Link href={`/profile/${author._id}`}>
+            <Link
+              href={`/profile/${author._id}`}
+              className="flex items-center gap-2"
+            >
               <h4 className="cursor-pointer small-semibold md:base-semibold text-dark2 dark:text-light2">
                 @{author.username}
                 <span className="small-medium text-dark2 dark:text-light2 ml-3">
@@ -97,6 +99,16 @@ function CommentCard({
                   {formatFromNow(createdAt)}
                 </span>
               </h4>
+              {/* Verified badge */}
+              {author.isVerified && (
+                <figure className="w-3 h-3 relative">
+                  <Image
+                    src={"/Twitter_Verified_Badge.svg"}
+                    alt="user verified logo"
+                    fill
+                  />
+                </figure>
+              )}
             </Link>
             <p className="mt-2 small-regular md:base-regular dark:text-primaryWhite">
               {text}

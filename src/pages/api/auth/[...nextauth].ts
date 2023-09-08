@@ -41,6 +41,7 @@ export const authOptions:NextAuthOptions = {
         session.user.username = token.username as unknown as  string
         session.user.onBoarded = token.onBoarded as unknown as boolean
         session.user.image = token.image  as unknown as string
+        session.user.isVerified = token.isVerified as unknown as boolean
       }
       return session;
     },
@@ -56,6 +57,9 @@ export const authOptions:NextAuthOptions = {
         if(typeof session?.onBoarded === 'boolean'){
           token.onBoarded = session.onBoarded || false
         }
+        if(typeof session?.isVerified === 'boolean'){
+          token.isVerified = session.isVerified || false
+        }
       }
       // creates the jwt called during the sign in process.
       if (user && trigger === 'signIn') {
@@ -67,6 +71,7 @@ export const authOptions:NextAuthOptions = {
           token.username = existingUser.username;
           token.onBoarded = existingUser.onBoarded
           token.image = existingUser.profileImgUrl;
+          token.isVerified = existingUser.isVerified;
         } else {
           // creates user in mongodb and then prefills content
           const newUser = await userModel.create({
@@ -81,6 +86,7 @@ export const authOptions:NextAuthOptions = {
           token.username = newUser.username;
           token.onBoarded = false;
           token.image = newUser.profileImgUrl;
+          token.isVerified = newUser.isVerified;
         }
       }
 
