@@ -27,7 +27,6 @@ export default async function handler(
           commentId as mongoose.Types.ObjectId
         );
         return res.status(200).json(getResponse);
-        return;
       case "POST":
         const { author, text, tweetId } = req.body;
         const validationResults = CommentValidation.safeParse({

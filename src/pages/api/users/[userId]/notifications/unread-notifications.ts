@@ -1,8 +1,7 @@
-import connectDb from "@/lib/config/connectDb";
-import { get_user_follower_suggestion } from "@/lib/controllers/user.controllers";
 import mongoose from "mongoose";
+import connectDb from "@/lib/config/connectDb";
 import type { NextApiRequest, NextApiResponse } from "next";
-
+import { get_unread_notifications } from "@/lib/controllers/notifications.controllers";
 interface dynamicParams {
   userId?: string | mongoose.Types.ObjectId;
 }
@@ -12,16 +11,20 @@ export default async function handler(
   res: NextApiResponse
 ) {
   try {
+    await connectDb();
     const { userId }: dynamicParams = req.query;
     if (!mongoose.Types.ObjectId.isValid(userId ?? "")) {
-      return res.status(400).json({ error: "Invalid userId" });
+      return res
+        .status(400)
+        .json({ status: "failed", error: "Invalid userId" });
     }
-    await connectDb();
     if (req.method === "GET") {
-      const response = await get_user_follower_suggestion(
+      const getResponse = await get_unread_notifications(
         userId as mongoose.Types.ObjectId
       );
-      res.status(200).json(response);
+      return res.status(200).json(getResponse);
+    } else {
+      res.status(405).json({ error: "Method not allowed" });
     }
   } catch (err) {
     res.status(501).json({ message: "an error just occured" });

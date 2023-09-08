@@ -19,7 +19,7 @@ export default async function handler(
         if (!mongoose.Types.ObjectId.isValid(commentId ?? "") || !mongoose.Types.ObjectId.isValid(replyId ?? "")) {
           return res.status(400).json({ error: "Invalid commentId or replyId" });
         }
-        connectDb();
+       await  connectDb();
         if(req.method  === "DELETE"){
             const deleteResponse = await delete_reply_to_comment(commentId as mongoose.Types.ObjectId, replyId as mongoose.Types.ObjectId);
             return res.status(300).json(deleteResponse);
