@@ -51,7 +51,10 @@ const get_user_profile = async (userId: Types.ObjectId) => {
 const get_user_followers = async (userId: Types.ObjectId) => {
   try {
     const userFollowers = await User.findById({ id: userId })
-      .populate("followers", "username _id displayName followers profileImgUrl isVerified")
+      .populate(
+        "followers",
+        "username _id displayName followers profileImgUrl isVerified"
+      )
       .select("followers");
     console.log(userFollowers);
     if (!userFollowers) {
@@ -87,7 +90,10 @@ const get_user_followers = async (userId: Types.ObjectId) => {
 const get_user_following = async (userId: Types.ObjectId) => {
   try {
     const userFollowing = await User.findById(userId)
-      .populate("following", "username _id displayName followers profileImgUrl isVerified")
+      .populate(
+        "following",
+        "username _id displayName followers profileImgUrl isVerified"
+      )
       .select("following");
     console.log(userFollowing);
     if (!userFollowing) {
@@ -127,65 +133,40 @@ const get_user_follower_suggestion = async (userId: Types.ObjectId) => {
   const maxSuggestion = 5;
   try {
     const user = await User.findById({ id: userId });
-    const userSuggestions = [];
-    if (!user) return;
-    // if the user has no followers. find 10 users that are not the user
-    if (user.followers.length === 0) {
-      const possibleSuggestions = await User.find({ _id: { $ne: userId } })
-        .select(" -bookmarks -followers -email -tweets")
-        .limit(10);
-      if (possibleSuggestions.length === 0) {
-        return {
-          status: "failed",
-          message: "no users available to suggest.",
-        };
-      }
-      // get a random user  maxSuggestion times and add to suggestion array.
-      for (let i = 0; i < maxSuggestion; i++) {
-        const randomIndex = Math.floor(
-          Math.random() * possibleSuggestions.length
-        );
-        userSuggestions.push(possibleSuggestions[randomIndex]);
-        possibleSuggestions.splice(randomIndex, 1);
-      }
+    if (!user) {
+      return{
+        status: 'failed',
+        message:"could not find a user with the given id.",
+        userId,
+        possibleSuggestions:[]
     }
-    // if the user has followers. get at most  10 users that are not user and user's followers.
-    else {
-      const possibleSuggestions = await User.find({
-        _id: { $nin: [...user.followers, userId] },
-      })
-        .select("-bookmarks -followers -tweets -following -email")
-        .limit(10);
-      // when we have no suggestion
-      if (possibleSuggestions.length === 0) {
-        return {
-          status: "failed",
-          message: "no users available to suggest.",
-        };
-      }
-      // shuffle the possibleSuggestions array using a cool js trick.
-      const shfulledSuggestions = possibleSuggestions.sort(
-        () => Math.random() - 0.5
-      );
-      // select the maxSuggestion users and add to userSuggestions array.
-      for (
-        let i = 0;
-        i < maxSuggestion && i < shfulledSuggestions.length;
-        i++
-      ) {
-        userSuggestions.push(shfulledSuggestions[i]);
-      }
-    }
+  };
+    // get the users that the specific user is not following
+    //and also do not return the user as a suggestion.
+    const possibleSuggestions = await User.find({
+      $or: [
+        { _id: { $nin: user.following } }, 
+        { _id: { $nin: [user._id] } }
+      ],
+    })
+    .select(
+      "-tweets -bookmarks -following -email -profileCoverUrl -bio -joinedAt"
+    )
+    .limit(maxSuggestion);
+
     return {
       status: "success",
-      message: "some user suggestions",
-      userSuggestions,
-    };
+      message:"a list of possible people to follow",
+      possibleSuggestions,
+      userId
+    }
   } catch (err) {
     console.error(err);
     return {
-      status: "success",
+      status: "failed",
       message: "an error occured while fetching user suggestions.",
+      userId,
+      possibleSuggestions:[]
     };
   }
 };
@@ -199,7 +180,7 @@ const get_user_follower_suggestion = async (userId: Types.ObjectId) => {
  */
 const get_user_tweets = async (
   userId: Types.ObjectId,
-  pageSize = 15,
+  pageSize = 10,
   page = 1
 ) => {
   try {
@@ -300,13 +281,19 @@ const add_to_user_bookmarks = async (
  */
 const get_user_bookmarks = async (
   userId: Types.ObjectId,
-  pageSize = 15,
+  pageSize = 10,
   page = 1
 ) => {
   try {
     const user = await User.findById(userId)
       .select("bookmarks")
-      .populate("bookmarks")
+      .populate({
+        path: "bookmarks",
+        populate: {
+          path: "author",
+          select: "username _id displayName  profileImgUrl isVerified",
+        },
+      })
       .skip((page - 1) * pageSize)
       .limit(pageSize);
     if (!user) {
@@ -393,10 +380,58 @@ const delete_from_user_bookmarks = async (
       console.error(err.message);
       return {
         status: "failed",
-        message: "failed to bookmark tweet.",
+        message: "failed to unbookmark tweet.",
       };
     }
   }
+};
+/**
+ * @description clears all the bookmarks for a specific user.
+ * @param userId 
+ * @returns
+ * @method DELETE
+ * @route /api/users/:userId/bookmarks 
+ */
+const delete_user_bookmarks = async (userId:  Types.ObjectId) => {
+try{
+   // find user
+   const user = await User.findById(userId);
+   // validate user response
+   if (!user) {
+     return {
+       status: "failed",
+       message: "user not found!",
+     };
+   }
+   const tweet = await Tweet.updateMany(
+    {bookmarks: userId},
+    {$pull : {bookmarks : userId}}
+   );
+  if(!tweet.acknowledged){
+    return {
+      status: "failed",
+      message: "could not delete the bookmarks for specific user.",
+    };
+  }
+     user.bookmarks = [];
+    await user.save();
+  return {
+    status: 'success',
+    message:"succcessfully deleted user's bookmarks.",
+    bookmarks: [],
+    userId
+  }
+}
+catch(err){
+  if (err instanceof Error) {
+    console.error(err.message);
+    return {
+      status: "failed",
+      message: "failed to delete all bookmarks by user",
+      userId
+    };
+  }
+}
 };
 /**
  *
@@ -596,15 +631,44 @@ const delete_user_profile = async (userId: Types.ObjectId) => {
   }
 };
 /**
- * @todo implement functionality
  * @param userId
- * @param secretKey
  * @route /api/users/:userId/verify
  * @method PUT
  * @description verifies a user if they have the secret key.
  */
-const verify_user = async (userId: Types.ObjectId, secretKey: string) => {
-  return "Verified";
+const verify_user = async (userId: Types.ObjectId) => {
+  try {
+    // validation for secretKey is done before calling this function
+    const user = await User.findById(userId).select("isVerified");
+    if (!user) {
+      return {
+        status: "failed",
+        message: `a user could not be found with a given id of ${userId}`,
+      };
+    }
+    if (user.isVerified) {
+      return {
+        status: "failed",
+        message: "user already verified!",
+      };
+    }
+    user.isVerified = true;
+    await user.save();
+    return {
+      status: "success",
+      message: "successfully verified the user.",
+      userId,
+      isVerified: true,
+    };
+  } catch (err) {
+    if (err instanceof Error) {
+      console.error(err.message);
+    }
+    return {
+      status: "failed",
+      message: "could not verify the given user.",
+    };
+  }
 };
 export {
   get_users,
@@ -619,5 +683,6 @@ export {
   add_to_user_bookmarks,
   get_user_bookmarks,
   delete_from_user_bookmarks,
+  delete_user_bookmarks,
   verify_user,
 };
