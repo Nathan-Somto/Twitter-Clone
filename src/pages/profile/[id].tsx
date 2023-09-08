@@ -1,8 +1,8 @@
 import Header from "@/components/common/Header";
-import Profile from "@/components/common/Profile";
+import Profile from "@/components/profile";
 import React, { useEffect } from "react";
 import { Profile as IProfile, setUser } from "@/features/users/usersSlice";
-import UserTweets from "@/components/common/Profile/UserTweets";
+import UserTweets from "@/components/profile/UsersTweets";
 import { useDispatch } from "react-redux";
 import { GetServerSideProps } from "next";
 import { getServerSession } from "next-auth";
@@ -58,7 +58,10 @@ export const getServerSideProps: GetServerSideProps = async ({
       console.error(err);
     }
     return {
-      notFound: true,
+      redirect: {
+        destination: "/500",
+        permanent: false,
+      },
     };
   }
 };

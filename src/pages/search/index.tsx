@@ -46,7 +46,10 @@ export const getServerSideProps: GetServerSideProps = async ({
       console.error(err.message);
     }
     return {
-      notFound: true,
+      redirect: {
+        destination: "/500",
+        permanent: false,
+      },
     };
   }
 };
