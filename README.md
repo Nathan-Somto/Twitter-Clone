@@ -1,6 +1,10 @@
 <div align="center">
 
-<img src='./public/X-light-logo.png' height='70'  width="70"/>
+ <svg viewBox="0 0 24 24" height="70"  width="70" aria-hidden="true">
+            <g>
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+            </g>
+      </svg>
 
 
 # Fullstack Twitter Web Clone
@@ -68,12 +72,21 @@ I wanted to challenge myself and see how long it would take me to create and com
 [Figma file link](https://www.figma.com)
 
 ### Home Page
+![Home Page](./screenshots/x-screenshot-home.png)
+
+### Sign in Page
+![Sign in Page](./screenshots/x-screenshot-sign-in-2.png)
 
 ### Tweet Details Page
 
 ### User Profile Page
+![Profile Page](./screenshots/x-screenshot-profile.png)
 
 ### Bookmark Page
+![Bookmark Page](./screenshots/x-screenshot-bookmarks.png)
+
+### Settings Page
+![Settings Page](./screenshots/x-screenshot-settings.png)
 
 ### Search Page
 
