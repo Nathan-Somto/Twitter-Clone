@@ -249,7 +249,7 @@ export default  function AccountProfile ({
                     </button>
                   </>
                 </FormControl>
-                <div className="absolute !my-0 z-[5] h-full w-full inset-0 bg-[rgba(0,0,0,0.5)] rounded-xl"></div>
+                <div className="absolute !my-0 z-[5] h-full w-full inset-0 bg-[rgba(0,0,0,0.5)] dark:bg-[rgba(107,107,107,0.5)] rounded-xl"></div>
               </FormItem>
             )}
           />
