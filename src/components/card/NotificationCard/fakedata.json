@@ -1,0 +1,68 @@
+[
+    {
+      "read": false,
+      "message": "liked",
+      "actionUser": {
+        "profileImgUrl": "/dummy/avatar-1.jpg",
+        "displayName": "Nathan Philip",
+        "username": "nat2",
+        "isVerified": true,
+        "_id": "user1_id"
+      },
+      "parentUser": "parentUser1",
+      "_id": "notification1_id"
+    },
+    {
+      "read": false,
+      "message": "retweeted",
+      "actionUser": {
+        "profileImgUrl": "/dummy/avatar-2.jpg",
+        "displayName": "Jerry gold",
+        "username": "jer_gold",
+        "isVerified": false,
+        "_id": "user2_id"
+      },
+      "parentUser": "parentUser2",
+      "_id": "notification2_id"
+    },
+    {
+      "read": true,
+      "message": "commented",
+      "actionUser": {
+        "profileImgUrl": "/dummy/avatar-3.jpg",
+        "displayName": "Mary Stewart",
+        "username": "iamMary",
+        "isVerified": false,
+        "_id": "user3_id"
+      },
+      "parentUser": "parentUser3",
+      "_id": "notification3_id"
+    },
+    {
+      "read": true,
+      "message": "followed",
+      "actionUser": {
+        "profileImgUrl": "/dummy/avatar-3.jpg",
+        "displayName": "Mary Stewart",
+        "username": "iamMary",
+        "isVerified": false,
+        "_id": "user4_id"
+      },
+      "parentUser": "parentUser4",
+      "_id": "notification4_id"
+    },
+    {
+      "read": true,
+      "message": "liked",
+      "actionUser": {
+        "profileImgUrl": "/dummy/avatar-4.jpg",
+        "displayName": "Stacy martinez",
+        "username": "stacy-doll",
+        "isVerified": false,
+        "_id": "user5_id"
+      },
+      "parentUser": "parentUser5",
+      "_id": "notification5_id"
+    }
+  ]
+  
