@@ -10,7 +10,7 @@ const get_user_notifications = async (userId: mongoose.Types.ObjectId) => {
     // find all the notifications that the parent user is set to the userId
     const userNotifications = await Notification.find({
       parentUser: userId,
-    }).populate("actionUser", "username profilImgUrl");
+    }).populate("actionUser", "username profileImgUrl displayName isVerified _id");
     // if nothing return an empty array
     return {
       status: "success",
@@ -21,18 +21,18 @@ const get_user_notifications = async (userId: mongoose.Types.ObjectId) => {
     // return as per usual.
   } catch (err) {
     if (err instanceof Error) {
-        console.error(err.message);
-      }
-      return {
-        status: 'failed',
-        message: "failed to fetch any notifications."
-      }
+      console.error(err.message);
+    }
+    return {
+      status: "failed",
+      message: "failed to fetch any notifications.",
+    };
   }
 };
 
 /**
  * @method GET
- * @route /api/users/:userId/notifications
+ * @route /api/users/:userId/unread-notifications
  * @description returns the length of unread notifications.
  */
 const get_unread_notifications = async (userId: mongoose.Types.ObjectId) => {
@@ -67,7 +67,7 @@ const read_user_notifications = async (userId: mongoose.Types.ObjectId) => {
     // update all the user notifications read status to true  if parent user is set to userId and read is false
     const notifications = await Notification.updateMany(
       { parentUser: userId, read: false },
-      { $set: [{ read: true }] }
+      { $set: { read: true } }
     );
     if (!notifications.acknowledged) {
       return {
