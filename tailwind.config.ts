@@ -21,11 +21,11 @@ const config: Config = {
         'xl':'1200px'
       },
       colors:{
-        primaryBlack : '#0F1419',
-        dark1: '#17202A',
-        dark2: '#1C2733',
-        dark3: '#283340',
-        dark4: '#3A444C',
+        primaryBlack: '#000000',
+        dark1: '#0A0A0A',
+        dark2: '#121212',
+        dark3: '#1A1A1A',
+        dark4: '#222222',
         light1: '#5B7083',
         light2: '#8899A6',
         light3: '#EBEEF0',
@@ -46,12 +46,23 @@ const config: Config = {
           "pulsing": {
             '0%, 100%': { transform: 'scale(1)' },
             '50%': { transform: 'scale(1.2)' },
+          },
+          "scale-up": {
+            '0%, 100%': { transform: 'scale(1)' },
+            '50%': { transform: 'scale(1.5)' },
+          },
+          'scale-down':{
+            '0%, 100%': { transform: 'scale(1)' },
+            '50%': { transform: 'scale(0.8)' },
           }
+
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "pulsing": "pulsing 1.2s ease-out infinite"
+        "pulsing": "pulsing 1.2s ease-out infinite",
+        "scale-up":"scale-up 0.45s ease-in-out",
+        "scale-down":"scale-down 0.45s ease-in-out"
       },
   },
   },

@@ -42,11 +42,11 @@ function Tooltip({ children, distanceFromItem = 6, ...props }: Props) {
     after:-mt-[8px] 
     after:border-[8px] 
     after:border-solid 
-    after:border-r-black
+    after:border-r-dark4
     after:border-t-transparent
     after:border-b-transparent
     after:border-l-transparent 
-    rounded-[6px] transition-opacity  bg-[rgba(0,0,0,0.75)] px-3 py-2  duration-500 ${props.className}`}
+    rounded-[6px] transition-opacity  bg-dark4 px-3 py-2  duration-500 ${props.className}`}
     >
       <span className="text-primaryWhite subtle-semibold">{children}</span>
     </div>
