@@ -14,15 +14,15 @@ export default function OnBoardingPage() {
       </div>
   }
  // if user is not logged in go to sign in page
- if(!session){
-  router.push('/sign-in');
-  return null;
+ if(status === 'unauthenticated'){
+  return <div className="dark:bg-primaryBlack h-screen grid place-items-center">
+    <h1 className="text-red-700 dark:text-red-400 font-semibold text-2xl">Not Authorized</h1>  
+  </div>;
  }
   
   // if user has onboarded go to home page
   if((session  as CustomSession)?.user?.onBoarded){
     router.push('/home');
-    return null;
   }
   // the bio and profileCover should always be empty because it is assumed when you haven't onBoarded you dont have the data.
   // for edit profile it will be prefilled because we fetch data Server Side
