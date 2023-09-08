@@ -23,7 +23,7 @@ import axios from "axios";
 import Loader from "@/components/ui/loader";
 import { useDispatch } from "react-redux";
 import { Tweet, addNewTweet } from "@/features/tweets/tweetsSlice";
-
+import {useRouter} from 'next/router';
 
 // to avoid server rendering
 const EmojiPicker = dynamic(
@@ -34,8 +34,11 @@ const EmojiPicker = dynamic(
 );
 
 
-
-function TweetBox() {
+type Props = {
+  toggleModal?:() => void
+}
+function TweetBox({toggleModal}:Props) {
+  const router = useRouter();
   const dispatch = useDispatch();
   const { data: session } = useSession();
   const [isPending, startTransition] = useTransition()
@@ -63,12 +66,11 @@ function TweetBox() {
     try {
       // modify isPublic based on user selection.
       values.isPublic = status === "Everyone";
-      console.log(values);
       // check if user is logged in
       if (!(session as CustomSession)?.user?.id || values.author === "1234") {
         throw new Error("The User must be logged in before you can tweet.");
       }
-      // upload image to upload thing if there is.
+      // upload image to uploadthing if there is.
       let uploadedImgUrl = "";
       if (imgFile.length) {
         const uploadedResponse = await uploadFiles({
@@ -95,13 +97,23 @@ function TweetBox() {
         throw new Error("Poorly formatted data.");
       }
 
-        // get the newly created tweet add to the tweet state.
-        
-        dispatch(addNewTweet(response.data.tweet as unknown as Tweet))
+        // get the newly created tweet add to the tweet state, if it is the home page or the user profile page.
+        if(router.pathname === '/home' || router.pathname === `/profile/${(session as CustomSession)?.user?.id}`){
+          dispatch(addNewTweet(response.data.tweet as unknown as Tweet))
+        }
         toast({
           description:"Successfully Created Tweet.",
         })
-       
+        // when we have succeeded with everything reset.
+        form.reset();
+        if(imgUrl){
+          setImgUrl('');
+          setImgFile([]);
+        }
+        // if it is being displayed on a modal close it.
+        if(toggleModal){
+          toggleModal();
+        }
     } catch (err) {
       if (err instanceof Error) {
         toast({
@@ -113,8 +125,8 @@ function TweetBox() {
     }
     finally{
     setIsLoading(false);
-    form.reset()
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   },[dispatch, imgFile, session, status]);
   function handleEmojiClick(emojiDataObj: EmojiClickData, _: MouseEvent) {
     // append emoji to text area value.
