@@ -32,7 +32,7 @@ const get_user_notifications = async (userId: mongoose.Types.ObjectId) => {
 
 /**
  * @method GET
- * @route /api/users/:userId/unread-notifications
+ * @route /api/users/:userId/notifications?q=unread-notifications
  * @description returns the length of unread notifications.
  */
 const get_unread_notifications = async (userId: mongoose.Types.ObjectId) => {

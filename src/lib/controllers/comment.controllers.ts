@@ -8,7 +8,7 @@ import Notification from "../models/notification.models";
  * 
  * @param commentId 
  * @returns 
- * @route /api/comments/:commentId/replies
+ * @route /api/comments/?parentComment:=parentComment
  * @method GET
  * @description get's the replies to a particular comment.
  */
@@ -109,7 +109,7 @@ const add_comment_to_tweet = async (tweetId: Types.ObjectId, commentData: Pick<I
  * 
  * @param commentId 
  * @param commentData 
- * @route /api/comments/:commentId/replies
+ * @route /api/comments/
  * @returns 
  * @method POST
  * @description adds a reply to a specific comment.
@@ -160,9 +160,10 @@ const add_reply_to_comment = async (commentId:Types.ObjectId, commentData: Pick<
     }
 }
 /**
- * @route /api/comments/:commentId/replies/:replyId
+ * @route /api/comments/:commentId
  * @method DELETE
  * @description deletes a reply to a specific comment.
+ * @deprecated
  */
 const delete_reply_to_comment = async (commentId: Types.ObjectId, replyId: Types.ObjectId) => {
     try{
@@ -202,6 +203,7 @@ const delete_reply_to_comment = async (commentId: Types.ObjectId, replyId: Types
  * @route /api/comments/:commentId
  * @method DELETE
  * @description deletes a specific comment.
+ * @deprecated
  */
 const delete_comment = async (commentId: Types.ObjectId,) => {
     try{

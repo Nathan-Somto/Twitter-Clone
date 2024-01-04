@@ -44,13 +44,13 @@ const get_user_profile = async (userId: Types.ObjectId) => {
  *
  * @param userId
  * @method GET
- * @route /api/users/:userId/followers
+ * @route /api/users/:userId?q=followers
  * @description gets the followers for a specific user.
  * @returns
  */
 const get_user_followers = async (userId: Types.ObjectId) => {
   try {
-    const userFollowers = await User.findById({ id: userId })
+    const userFollowers = await User.findById(userId)
       .populate(
         "followers",
         "username _id displayName followers profileImgUrl isVerified"
@@ -83,7 +83,7 @@ const get_user_followers = async (userId: Types.ObjectId) => {
  *
  * @param userId
  * @method GET
- * @route /api/users/:userId/following
+ * @route /api/users/:userId?q=following
  * @description gets the users that a specific user follows.
  * @returns
  */
@@ -101,7 +101,7 @@ const get_user_following = async (userId: Types.ObjectId) => {
         status: "failed",
         user: userId,
         following: [],
-        messsage: "could not find any followers",
+        messsage: "could not find any persons the user follows",
       };
     }
     return {
@@ -123,7 +123,7 @@ const get_user_following = async (userId: Types.ObjectId) => {
  *
  * @param userId
  * @method GET
- * @route /api/users/:userId/follower-suggestion
+ * @route /api/users/:userId?q=follow-suggestion
  * @description generates followers suggestion for a specific user.
  * @returns
  *
@@ -132,7 +132,7 @@ const get_user_follower_suggestion = async (userId: Types.ObjectId) => {
   // controls the max suggestion.
   const maxSuggestion = 5;
   try {
-    const user = await User.findById({ id: userId });
+    const user = await User.findById(userId);
     if (!user) {
       return{
         status: 'failed',
@@ -150,7 +150,7 @@ const get_user_follower_suggestion = async (userId: Types.ObjectId) => {
       ],
     })
     .select(
-      "-tweets -bookmarks -following -email -profileCoverUrl -bio -joinedAt"
+      "username displayName _id profileImgUrl"
     )
     .limit(maxSuggestion);
 
@@ -174,7 +174,7 @@ const get_user_follower_suggestion = async (userId: Types.ObjectId) => {
  *
  * @param userId
  * @method GET
- * @route /api/users/:userId/tweets?pageSize=:pageSize&page=:page
+ * @route /api/users/:userId?q=tweets&pageSize=:pageSize&page=:page
  * @returns
  * @description gets a paginated list of all the tweets for a specific user.
  */

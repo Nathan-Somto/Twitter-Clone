@@ -94,7 +94,7 @@ const get_tweet = async (tweetId: Types.ObjectId, userId: Types.ObjectId) => {
       if (!user.following.includes(tweet.author._id)) {
         return {
           status: "failed",
-          noAccess: false,
+          noAccess: true,
           message:
             "you cannot read this tweet because it is private consider following the user to gain access.",
         };
@@ -216,7 +216,7 @@ const delete_tweet = async (
     // delete all comments associated with the tweet.
     await Comment.deleteMany({ tweetId });
     return {
-      status: "successful",
+      status: "success",
       messsage: "successfully deleted the tweet",
     };
   } catch (err) {
@@ -239,7 +239,7 @@ const delete_tweet = async (
 // you cant edit the content of a tweet only the status of public or private.
 const update_tweet_status = async (status: boolean, tweetId: Types.ObjectId) => {
   try {
-    const tweet = await Tweet.findById({ _id: tweetId });
+    const tweet = await Tweet.findById(tweetId);
     if (!tweet) {
       return {
         status: "failed",
@@ -252,7 +252,12 @@ const update_tweet_status = async (status: boolean, tweetId: Types.ObjectId) => 
       status: "success",
       message: status ? "made tweet public" : "made tweet private",
     };
-  } catch (err) {}
+  } catch (err) {
+     return {
+      status: "failed",
+      message: "could not complete action",
+    };
+  }
 };
 /**
  * 
@@ -369,7 +374,6 @@ const retweet = async (
     await newRetweet.save();
     await user.save();
     await originalTweet.save();
-    console.log("new retweet>>", newRetweet)
     return {
       status: "success",
       reTweet: {

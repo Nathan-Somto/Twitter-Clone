@@ -25,14 +25,13 @@ export default async function handler(
         return res.status(200).json(getResponse);
         case 'PUT':
             if(req.body.status === undefined) {
-                return res.status(300).json({message: 'status is required'})
+                return res.status(400).json({message: 'status is required'})
             }
             const putResponse = await update_tweet_status(req.body.status, tweetId as mongoose.Types.ObjectId)
             return res.status(201).json(putResponse)
-        return 
         case 'DELETE':
             const deleteResponse = await delete_tweet(tweetId as mongoose.Types.ObjectId, userId as mongoose.Types.ObjectId)
-            return res.status(300).json(deleteResponse)
+            return res.status(200).json(deleteResponse)
         default:
             res.status(405).json({ error: "Method not allowed" });
             break;
