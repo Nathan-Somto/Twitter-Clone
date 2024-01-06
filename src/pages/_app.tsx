@@ -6,18 +6,21 @@ import type { Session } from "next-auth";
 import { Provider } from "react-redux";
 import { store } from "@/store";
 import ThemeLayout from "@/components/layout/ThemeLayout";
+import ErrorBoundary from "@/components/errorboundary";
 export default function App({
   Component,
   pageProps: { session, ...pageProps },
 }: AppProps<{ session: Session }>) {
   return (
-    <SessionProvider session={session}>
-      <Provider store={store}>
-        <ThemeLayout>
-          <Component {...pageProps} />
-        </ThemeLayout>
-        <Toaster />
-      </Provider>
-    </SessionProvider>
+    <ErrorBoundary>
+      <SessionProvider session={session}>
+        <Provider store={store}>
+          <ThemeLayout>
+            <Component {...pageProps} />
+          </ThemeLayout>
+          <Toaster />
+        </Provider>
+      </SessionProvider>
+    </ErrorBoundary>
   );
 }
