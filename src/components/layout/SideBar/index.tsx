@@ -25,7 +25,7 @@ function SideBar() {
         const response = await axios.get(
           `/api/users/${
             (session as CustomSession)?.user?.id ?? ""
-          }/notifications/unread-notifications`
+          }/notifications?q=unread-notifications`
         );
         console.log(response.data);
         if (response.data?.status === "success") {
@@ -52,15 +52,15 @@ function SideBar() {
   return (
     <>
       <nav
-        className="fixed bottom-0 md:relative 
+        className="fixed bottom-0   
       left-0 md:bottom-auto w-full md:top-0 z-20
       flex h-[65px] border-t border-t-light3
-     dark:border-t-dark4 border-r-transparent 
+      dark:border-t-dark4 border-r-transparent 
        md:border-t-transparent md:h-screen  flex-col 
        justify-between md:gap-12 overflow-visible border-r
      md:border-r-light3 dark:md:border-r-dark4 dark:bg-primaryBlack
-     bg-primaryWhite px-5 pt-[0.65rem]
-       pb-2 md:px-5 lg:px-10 md:py-6 md:max-w-[275px]"
+     bg-primaryWhite px-5 pt-[0.65rem] md:w-[100px]
+       pb-2 md:px-5 xl:px-10 md:py-6 xl:w-[275px]"
       >
         <ul className=" flex items-center xl:items-start relative gap-1 md:flex-col justify-between md:px-2 md:justify-center md:gap-4 xl:gap-3 xl:px-4 ">
           {/* X logo */}

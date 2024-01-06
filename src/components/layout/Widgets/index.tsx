@@ -3,19 +3,21 @@ import HomeFilters from "../../filters/HomeFilters";
 import SuggestionBox from "../SuggestionBox";
 import SearchBar from "@/components/form/SearchBar";
 import { useRouter } from "next/router";
-type Props = {};
+import Attribution from "@/components/common/Attribution";
 
-function Widgets({}: Props) {
+
+function Widgets() {
   const router = useRouter();
   const isSearchPage = router.pathname.includes("search");
   const isHomePage = router.pathname === "/home";
 
   return (
-    <div className=" hidden space-y-8 px-[10px] min-w-[310px] py-4 xl:flex flex-col h-screen overflow-auto">
+    <aside className=" hidden space-y-8 px-[10px] w-[310px] fixed top-0 right-0 py-4 xl:flex flex-col h-screen overflow-auto">
       {!isSearchPage && <SearchBar isSearchPage={false} />}
       {isHomePage && <HomeFilters />}
       <SuggestionBox />
-    </div>
+      <Attribution containerStyles="text-sm font-semibold" />
+    </aside>
   );
 }
 
