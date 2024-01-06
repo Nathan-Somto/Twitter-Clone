@@ -1,3 +1,5 @@
+import Attribution from "@/components/common/Attribution";
+import { SecondaryLayout } from "@/components/layout";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 export default function IndexPage() {
@@ -5,7 +7,7 @@ export default function IndexPage() {
   const { data: session, status } = useSession();
   if (status === "loading") {
     return (
-      <main className="h-screen dark:bg-primaryBlack bg-primaryWhite grid place-items-center relative">
+      <SecondaryLayout>
         <figure>
           <svg
             viewBox="0 0 24 24"
@@ -17,13 +19,8 @@ export default function IndexPage() {
             </g>
           </svg>
         </figure>
-        <div className="h3-semibold dark:text-light3 !text-[20px] absolute bottom-5 text-center">
-          <p>
-            created by <span className="opacity-80">@Nathan-Somto</span> &copy;
-            {new Date().getFullYear()}
-          </p>
-        </div>
-      </main>
+        <Attribution/>
+      </SecondaryLayout>
     );
   }
   if (!session) {
