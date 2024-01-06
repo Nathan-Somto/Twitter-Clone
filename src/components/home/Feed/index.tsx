@@ -5,7 +5,7 @@ import {
   selectFilter,
 } from "@/features/filterTweets/filterTweetsSlice";
 import { TweetState, selectTweets } from "@/features/tweets/tweetsSlice";
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import { useSelector } from "react-redux";
 
 type Props = {
@@ -33,7 +33,7 @@ function Feed({ loading }: Props) {
       }
 
       if (selectedFilter === "Following") {
-        filteredTweets = filteredTweets.filter((tweet) => tweet.isPublic);
+        filteredTweets = filteredTweets.filter((tweet) => !tweet.isPublic);
       }
       return filteredTweets.map((tweet) => ({
         tweet: tweets[originalTweetIndex[tweet._id]],
@@ -42,19 +42,29 @@ function Feed({ loading }: Props) {
     },
     []
   );
-  console.log("tweets length", tweets.tweets.length);
+  const filteredResults = useMemo(() => {
+    return filteredTweets(tweets, selectedFilter);
+  }, [tweets, selectedFilter]);
   return (
-    <section className="border-t dark:border-t-dark4 pb-[75px] md:pb-0">
-      {filteredTweets(tweets, selectedFilter).map(
-        ({ tweet, originalIndex }) => (
-          <TweetCard
-            {...tweet}
-            key={tweet._id}
-            isTweetPage={false}
-            index={originalIndex}
-          />
-        )
-      )}
+    <section className="border-t dark:border-t-dark4">
+      {!!tweets.tweets.length &&
+        (filteredResults.length === 0 && selectedFilter !== "Latest" ? (
+          <div className="px-6 mt-4">
+            <p className="!body-medium opacity-70">
+              Could not find tweets for{" "}
+              <span className="text-primaryBlue">{selectedFilter}</span>{" "}
+            </p>
+          </div>
+        ) : (
+          filteredResults.map(({ tweet, originalIndex }) => (
+            <TweetCard
+              {...tweet}
+              key={tweet._id}
+              isTweetPage={false}
+              index={originalIndex}
+            />
+          ))
+        ))}
       {
         <div>
           {loading ? (
@@ -73,18 +83,20 @@ function Feed({ loading }: Props) {
                 className="h-[6px] w-[6px] p-[6px] rounded-full bg-primaryBlue animate-bounce shadow-[0_0_5px_#fff]"
               ></div>
             </div>
-          ) : (
-              null
-          )}
+          ) : null}
         </div>
       }
       {tweets.tweets.length === 0 && (
         <div className="px-6 mt-4">
-          <h3 className="text-[28px] font-semibold mb-1">Oops, Something went wrong</h3>
+          <h3 className="text-[28px] font-semibold mb-1">
+            Oops, Something went wrong
+          </h3>
           <p className="!base-medium opacity-70">
             Could not Retrieve Tweets at this moment.
           </p>
-          <Button variant="outline" className="text-lg mt-2">Retry</Button>
+          <Button variant="outline" className="text-lg mt-2">
+            Retry
+          </Button>
         </div>
       )}
     </section>
