@@ -126,6 +126,9 @@ I wanted to challenge myself and see how long it would take me to create and com
 
  `NEXTAUTH_URL`
 
+  `NEXTAUTH_SECRET`
+
+  
  `UPLOADTHING_SECRET`
 
  `UPLOADTHING_APP_ID`

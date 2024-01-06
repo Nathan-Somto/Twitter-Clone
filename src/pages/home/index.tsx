@@ -56,6 +56,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
       },
     };
   } catch (err) {
+    console.log((err as Error).message)
     return {
       redirect: {
         destination: "/500",
