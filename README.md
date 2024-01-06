@@ -12,9 +12,9 @@
 <div align="center">
 <img src='https://img.shields.io/github/issues/nathan-somto/Twitter-Clone?style=for-the-badge'/>
 
-<img src="https://img.shields.io/badge/Maintained-Yes-lemon?style=for-the-badge"/>
+<img src="https://img.shields.io/badge/Maintained-No-red?style=for-the-badge"/>
 
-<img src="https://img.shields.io/badge/Deployed-No-red?style=for-the-badge"/>
+<img src="https://img.shields.io/badge/Deployed-Yes-lemon?style=for-the-badge"/>
 
 <img src="https://img.shields.io/github/forks/nathan-somto/Twitter-Clone?style=for-the-badge" />
 
