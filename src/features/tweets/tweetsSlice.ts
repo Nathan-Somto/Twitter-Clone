@@ -146,12 +146,12 @@ export const tweetSlice = createSlice({
     deleteTweet: (state, action: deleteTweetAction) => {
       const { _id, index } = action.payload;
       delete state.originalTweetIndex[_id];
-      state.tweets.splice(index, 1);
       const copyOriginalTweetIndex: Record<string, number> = {};
       state.tweets.slice(index + 1).forEach((tweet) => {
-        copyOriginalTweetIndex[tweet._id] = index - 1;
+        copyOriginalTweetIndex[tweet._id] = state.originalTweetIndex[tweet._id]  - 1;
       });
-      state.originalTweetIndex = copyOriginalTweetIndex;
+      state.tweets.splice(index, 1);
+      state.originalTweetIndex = {...state.originalTweetIndex,...copyOriginalTweetIndex};
     },
     // Tweet score calculation is done on server as well this is just to update the ui for filtering.
     likeTweet: (state, action: updateLikesAction) => {
