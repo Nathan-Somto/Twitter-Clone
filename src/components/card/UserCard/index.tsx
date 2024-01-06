@@ -12,13 +12,13 @@ import { toast } from "@/components/ui/use-toast";
 
 type Props = {
   _id: string;
-  name: string;
+  displayName: string;
   username: string;
   profileImgUrl: string;
   followers?: string[];
 };
 
-function UserCard({ _id, name, username, profileImgUrl, followers }: Props) {
+function UserCard({ _id, displayName, username, profileImgUrl, followers }: Props) {
   const router = useRouter();
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -27,7 +27,7 @@ function UserCard({ _id, name, username, profileImgUrl, followers }: Props) {
   useEffect(() => {
     if (followers) {
       setIsFollowing(
-        followers?.find(
+        followers.find(
           (user_id) => user_id === (session as CustomSession)?.user?.id
         ) !== undefined
       );
@@ -43,9 +43,11 @@ function UserCard({ _id, name, username, profileImgUrl, followers }: Props) {
         throw new Error("user not Logged in.");
       }
       setIsFollowing((prevState) => !prevState);
-      if (!isFollowing && !isCurrentUserPage) {
-       followers?.push((session as CustomSession)?.user?.id ?? "");
-      } 
+      if(followers){
+        if (!isFollowing && !isCurrentUserPage) {
+         followers?.push((session as CustomSession)?.user?.id ?? "");
+        } 
+      }
       const response = await axios.put(`/api/users/${_id}/follow`, {
         targetUserId: (session as CustomSession)?.user?.id,
       });
@@ -54,36 +56,41 @@ function UserCard({ _id, name, username, profileImgUrl, followers }: Props) {
         // if it is the user's (logged in) profile page dispatch this actions.
         /**
          *  think about it if it is the logged in user page an he/she is viewing the cards on the modal
-         *  and unfollows and follows, when he/she exits the data should be updated realtime.
+         *  and unfollows or follows, when he/she exits the data should be updated realtime.
          * */
-        if (isCurrentUserPage) {
-          if (isFollowing) {
-            // unfollow user.
-            dispatch(
-              toggleFollow({
-                _id: (session as CustomSession)?.user?.id as string,
-                remove: true,
-              })
-            );
-          } else {
-            // follow user.
-            dispatch(
-              toggleFollow({
-                _id: (session as CustomSession)?.user?.id as string,
-                remove: false,
-              })
-            );
+        if(followers){
+
+          if (isCurrentUserPage) {
+            if (isFollowing) {
+              // unfollow user.
+              dispatch(
+                toggleFollow({
+                  _id: (session as CustomSession)?.user?.id as string,
+                  remove: true,
+                })
+              );
+            } else {
+              // follow user.
+              dispatch(
+                toggleFollow({
+                  _id: (session as CustomSession)?.user?.id as string,
+                  remove: false,
+                })
+              );
+            }
           }
         }
-      }
+        }
     } catch (err) {
       if (err instanceof Error) {
         console.error(err);
-        if(isFollowing){
-          followers?.pop();
-        }
-        else{
-          followers?.push((session as CustomSession)?.user?.id ?? "");
+        if(followers){
+          if(isFollowing){
+            followers.pop();
+          }
+          else{
+            followers.push((session as CustomSession)?.user?.id ?? "");
+          }
         }
         setIsFollowing((prevState) => !prevState);
         toast({
@@ -118,9 +125,9 @@ function UserCard({ _id, name, username, profileImgUrl, followers }: Props) {
             />
           </div>
         </Link>
-        <Link href={`/profile/${_id}`} className="flex-1 w-[60px]">
-          <h4 className="base-semibold text-dark1 dark:text-light1 text-clip w-full">
-            {name}
+        <Link href={`/profile/${_id}`} className="flex-1 w-[60px] block overflow-hidden">
+          <h4 className="base-semibold text-dark1 dark:text-light1 text-ellipsis w-full">
+            {displayName}
           </h4>
           <p className={`small-medium text-dark2 dark:text-light2`}>
             @{username}

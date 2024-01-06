@@ -32,7 +32,7 @@ function CommentCard({
   async function fetchReplies() {
     setLoading(true);
     try {
-      const response = await axios.get(`/api/comment/${_id}/replies`);
+      const response = await axios.get(`/api/comment?parentComment=${_id}`);
       if (response.data?.status !== "success") {
         throw new Error(response.data);
       }
