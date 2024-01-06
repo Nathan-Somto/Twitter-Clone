@@ -1,3 +1,4 @@
+import { SecondaryLayout } from "@/components/layout";
 import Seo from "@/components/seo";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/router";
@@ -7,7 +8,7 @@ export default function ErrorPage() {
   return (
     <>
       <Seo title="Error / X" />
-      <main className="h-screen dark:bg-primaryBlack bg-primaryWhite grid place-items-center relative">
+     <SecondaryLayout>
         <nav className="fixed inset-0 w-full h-16 px-6 flex">
           <figure role="navigation" onClick={() => router.push("/home")}>
             <svg
@@ -36,7 +37,7 @@ export default function ErrorPage() {
             Retry
           </Button>
         </section>
-      </main>
+     </SecondaryLayout>
     </>
   );
 }

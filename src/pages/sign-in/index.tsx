@@ -17,6 +17,8 @@ import Loader from "@/components/ui/loader";
 import Seo from "@/components/seo";
 import { CustomSession } from "@/types";
 import { useRouter } from "next/router";
+import { SecondaryLayout } from "@/components/layout";
+import Attribution from "@/components/common/Attribution";
 
 
 function SigninPage() {
@@ -25,9 +27,10 @@ function SigninPage() {
   const [isLoading, setIsLoading] = useState(false);
   if (status === "loading") {
     return (
-      <div className="dark:bg-primaryBlack h-screen grid place-items-center">
-        <Loader size="lg" />
-      </div>
+     <SecondaryLayout>
+       <Loader size="lg" />
+     </SecondaryLayout>
+     
     );
   }
  
@@ -138,13 +141,7 @@ function SigninPage() {
           </AlertDialogContent>
         </AlertDialog>
       </section>
-      <div className="absolute bottom-2 max-w-[600px] left-0 right-0 mx-auto base-medium opacity-80 text-center">
-        <p>
-          Created by{" "}
-          <span className="text-primaryBlue underline">Nathan Somto</span>{" "}
-          &copy;{new Date().getFullYear()}
-        </p>
-      </div>
+     <Attribution/>
     </main>
     </>
   );

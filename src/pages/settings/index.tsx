@@ -1,14 +1,14 @@
 import Settings from "@/components/settings";
 import React from "react";
 import Header from "@/components/common/Header";
-import Layout from "@/components/layout";
+import { RootLayout } from "@/components/layout";
 
 function SettingsPage() {
   return (
-    <Layout>
+    <RootLayout>
       <Header titleText="Settings" />
       <Settings />
-    </Layout>
+    </RootLayout>
   );
 }
 

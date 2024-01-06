@@ -2,16 +2,17 @@ import Seo from "@/components/seo";
 import Image from "next/image";
 import React from "react";
 import Link from 'next/link';
-type Props = {};
+import { SecondaryLayout } from "@/components/layout";
 
-function WipPage({}: Props) {
+
+function WipPage() {
   return (
     <>
       <Seo
         title="Work in Progress / X"
         description="Please bear with the team as this page is under construction"
       />
-      <main className="dark:bg-primaryBlack dark:text-primaryWhite bg-light3 text-primaryBlack  h-screen grid place-items-center">
+      <SecondaryLayout>
       <nav className="w-full fixed inset-0 h-20 py-4 px-8 mx-auto flex items-center dark:bg-primaryBlack bg-light3 dark:text-light2 text-dark3">
         <Link href="/home">
         <figure>
@@ -47,7 +48,7 @@ function WipPage({}: Props) {
             </p>
           </div>
         </section>
-      </main>
+      </SecondaryLayout>
     </>
   );
 }

@@ -7,7 +7,7 @@ import { useDispatch } from "react-redux";
 import { GetServerSideProps } from "next";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/[...nextauth]";
-import Layout from "@/components/layout";
+import {RootLayout} from "@/components/layout";
 import { setSelectedFilter } from "@/features/filterTweets/filterTweetsSlice";
 import axios from "axios";
 import { CustomSession } from "@/types";
@@ -47,7 +47,6 @@ export const getServerSideProps: GetServerSideProps = async ({
         notFound: true,
       };
     }
-    console.log(profileData.data?.user);
     return {
       props: {
         user: profileData.data.user,
@@ -73,22 +72,22 @@ function ProfilePage({ user }: Props) {
   }, [dispatch, user]);
   return (
     <>
-    <Seo
-      title={`@${user.username + ' on'} X`}
-      description={`check out ${user.username} profile on X.`}
-    />
-    <Layout>
-      <div className="border-r dark:border-r-dark4  h-screen overflow-auto pb-[75px] md:pb-0">
-        <Header
-          titleText={user.displayName}
-          subtitleText={`${user.tweets.length} tweet${
-            user.tweets.length > 1 ? "s" : ""
-          }`}
-        />
-        <Profile />
-        <UserTweets />
-      </div>
-    </Layout>
+      <Seo
+        title={`@${user.username + " on"} X`}
+        description={`check out ${user.username} profile on X.`}
+      />
+      <RootLayout>
+        <div>
+          <Header
+            titleText={user.displayName}
+            subtitleText={`${user.tweets.length} tweet${
+              user.tweets.length > 1 ? "s" : ""
+            }`}
+          />
+          <Profile />
+          <UserTweets />
+        </div>
+      </RootLayout>
     </>
   );
 }

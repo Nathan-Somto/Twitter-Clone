@@ -3,8 +3,7 @@ import Header from "@/components/common/Header";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
 import UserCard from "@/components/card/UserCard";
-import Layout from "@/components/layout";
-import { GetServerSideProps } from "next";
+import type { GetServerSideProps } from "next";
 import { authOptions } from "../api/auth/[...nextauth]";
 import { getServerSession } from "next-auth";
 import { CustomSession } from "@/types";
@@ -12,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import Loader from "@/components/ui/loader";
 import axios from "axios";
 import { toast } from "@/components/ui/use-toast";
+import { RootLayout } from "@/components/layout";
 export const getServerSideProps: GetServerSideProps = async ({
   req,
   res,
@@ -65,7 +65,7 @@ type Props = {
   }[];
 };
 
-function SearchPage({ totalPages, pageNumber, users }: Props) {
+function SearchPage({ totalPages=0, pageNumber=0, users }: Props) {
   const router = useRouter();
   const [search, setSearch] = useState<string>("");
   const [userData, setUserData] = useState<typeof users>(users);
@@ -108,48 +108,44 @@ function SearchPage({ totalPages, pageNumber, users }: Props) {
   const data = search ? filterData : userData;
   return (
     <>
-      <Layout>
-        <div className="border-r dark:border-r-dark4 overflow-auto h-screen md:mb-0  mb-9">
+      <RootLayout>
+        <div>
           <Header titleText="Search" />
           <div className="w-[90%] mx-auto mb-5 flex justify-center mt-7">
             <SearchBar isSearchPage filterResult={filterResult} />
           </div>
-          {userData.length === 0  && (
-            <div className="mt-5 text-center">
+          {userData.length === 0 && (
+            <div className="my-5 text-center">
               <p className="text-dark2 dark:text-light2 h4-medium">
                 Nothing matches{" "}
-                <span className="font-semibold">{`${
-                  searchTerm
-                }`}</span>
+                <span className="font-semibold">{`${searchTerm}`}</span>
               </p>
             </div>
           )}
-           {(filterData.length === 0 && search)  && (
-            <div className="mt-5 text-center">
+          {filterData.length === 0 && search && (
+            <div className="my-5 text-center">
               <p className="text-dark2 dark:text-light2 h4-medium">
                 Nothing matches{" "}
-                <span className="font-semibold">{`${
-                  search
-                }`}</span>
+                <span className="font-semibold">{`${search}`}</span>
               </p>
             </div>
           )}
           <div className="divide-y divide-light2 dark:divide-dark4 border-t border-b dark:border-dark4 border-light2">
             {data.map((data) => (
               <div className="px-5 py-3" key={data._id}>
-                <UserCard name={data.displayName} {...data} />
+                <UserCard  {...data} />
               </div>
             ))}
           </div>
           {noMoreUsers ? null : (
-            <div>
+            <div className="flex mt-7 items-center justify-center">
               <Button disabled={loading} onClick={fetchMoreUsers}>
                 {loading ? <Loader size="sm" /> : "Load More"}
               </Button>
             </div>
           )}
         </div>
-      </Layout>
+      </RootLayout>
     </>
   );
 }
