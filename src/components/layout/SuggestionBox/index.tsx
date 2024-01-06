@@ -3,7 +3,7 @@ import Loader from "@/components/ui/loader";
 import { CustomSession } from "@/types";
 import axios from "axios";
 import { useSession } from "next-auth/react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 
 
 type UserSuggestion = {
@@ -17,6 +17,7 @@ function SuggestionBox() {
   const { data: session } = useSession();
   const [userData, setUserData] = useState<UserSuggestion[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const howManyFetched = useRef<number>(0);
   useEffect(() => {
     async function getSuggestions() {
       try {
@@ -24,8 +25,8 @@ function SuggestionBox() {
           `/api/users/${(session as CustomSession).user?.id}?q=follow-suggestion`
         );
         console.log(response.data)
-        if (response.data?.status === "success") {
-          setUserData((response.data as unknown as UserSuggestion[]))
+        if (response.data?.status === "success" ) {
+          setUserData((response.data.possibleSuggestions as unknown as UserSuggestion[]))
         } else {
           throw new Error(response.data);
         }
@@ -35,14 +36,16 @@ function SuggestionBox() {
         }
       } finally {
         setLoading(false);
+        howManyFetched.current += 1;
       }
     }
     if (typeof window === "undefined") return;
     const isXl = window.innerWidth >= 1200;
-    if (isXl && userData === null && !loading) {
+    if (isXl && userData === null && !loading && howManyFetched.current < 3) {
       setLoading(true);
       getSuggestions();
     }
+   
   }, [session, userData]);
 
   return (

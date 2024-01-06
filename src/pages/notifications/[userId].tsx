@@ -1,5 +1,5 @@
 import Header from "@/components/common/Header";
-import Layout from "@/components/layout";
+import {RootLayout} from "@/components/layout";
 import React, { useEffect, useState } from "react";
 import NotificationCard from "@/components/card/NotificationCard";
 import NotificationsFilter from "@/components/filters/NotificationsFilters";
@@ -112,11 +112,12 @@ function NotificationsPage({ notifications }: Props) {
     async function readNotifications() {
       try {
         const response = await axios.put(
-          `/api/users/${(session as unknown as CustomSession)?.user?.id ?? ""}/notifications`
+          `/api/users/${
+            (session as unknown as CustomSession)?.user?.id ?? ""
+          }/notifications`
         );
         if (response.data?.status === "success") {
           setHasUnread(false);
-          console.log(response.data);
         } else {
           throw new Error(response.data?.message);
         }
@@ -160,7 +161,6 @@ function NotificationsPage({ notifications }: Props) {
       }
     }
   }
-  console.log("hasUnread >> ", hasUnread)
   return (
     <>
       <Seo
@@ -168,8 +168,8 @@ function NotificationsPage({ notifications }: Props) {
           (session as CustomSession)?.user?.username ?? ""
         } on X`}
       />
-      <Layout>
-        <section className=" h-screen overflow-auto border-r dark:border-r-dark4 pb-[75px] md:pb-0">
+      <RootLayout>
+        <section>
           <Header titleText="Notifications" />
           <NotificationsFilter
             selectedOption={selectedOption}
@@ -200,7 +200,7 @@ function NotificationsPage({ notifications }: Props) {
             </div>
           ) : null}
         </section>
-      </Layout>
+      </RootLayout>
     </>
   );
 }

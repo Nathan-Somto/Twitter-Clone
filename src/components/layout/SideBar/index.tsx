@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import ProfileBox from "../ProfileBox";
 import { useSession } from "next-auth/react";
@@ -15,6 +15,7 @@ function SideBar() {
   const [open, setOpen] = useState<boolean>(false);
   const [numberOfUnreadNotifications, setNumberOfUnreadNotifications] =
     useState<number>(-1);
+    const howManyFetched = useRef<number>(0);
   function toggleModal() {
     setOpen((prevState) => !prevState);
   }
@@ -38,12 +39,15 @@ function SideBar() {
           console.error(err.message);
         }
       }
+      finally {
+        howManyFetched.current += 1
+      }
     }
     if(router.pathname.includes('notifications')){
       setNumberOfUnreadNotifications(0);
     }
     else {
-      if(numberOfUnreadNotifications  < 0){
+      if(numberOfUnreadNotifications  < 0 && howManyFetched.current < 1){
         getNumberOfUnreadNotifications();
       }
     }

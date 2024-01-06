@@ -37,18 +37,18 @@ export default async function handler(
             return res.status(400).json({ error: "Invalid author or tweetId" });
           }
           let postResponse = {};
-          if(parentComment){
-           postResponse = await add_comment_to_tweet(
-          validationResults.data.tweetId as unknown as mongoose.Types.ObjectId,
-          //@ts-ignore
-            validationResults.data
-          );
+          if(parentComment){         
+            postResponse = await add_reply_to_comment(
+             parentComment as mongoose.Types.ObjectId,
+         //@ts-ignore
+           {...validationResults.data, parentComment}
+         );
           }else{
-             postResponse = await add_reply_to_comment(
-              parentComment as mongoose.Types.ObjectId,
-          //@ts-ignore
-            {...validationResults.data, parentComment}
-          );
+          postResponse = await add_comment_to_tweet(
+            validationResults.data.tweetId as unknown as mongoose.Types.ObjectId,
+            //@ts-ignore
+              validationResults.data
+            );
           }
           return res.status(201).json(postResponse);
         }

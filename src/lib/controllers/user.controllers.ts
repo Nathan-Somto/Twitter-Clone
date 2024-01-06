@@ -56,7 +56,6 @@ const get_user_followers = async (userId: Types.ObjectId) => {
         "username _id displayName followers profileImgUrl isVerified"
       )
       .select("followers");
-    console.log(userFollowers);
     if (!userFollowers) {
       return {
         status: "failed",
@@ -144,9 +143,9 @@ const get_user_follower_suggestion = async (userId: Types.ObjectId) => {
     // get the users that the specific user is not following
     //and also do not return the user as a suggestion.
     const possibleSuggestions = await User.find({
-      $or: [
+      $and: [
         { _id: { $nin: user.following } }, 
-        { _id: { $nin: [user._id] } }
+        { _id: { $nin: [userId] } }
       ],
     })
     .select(
@@ -195,7 +194,6 @@ const get_user_tweets = async (
       .select("tweets")
       .skip((page - 1) * pageSize)
       .limit(pageSize);
-    console.log(user);
     if (!user) {
       return {
         status: "failed",

@@ -33,6 +33,7 @@ function UserCard({ _id, displayName, username, profileImgUrl, followers }: Prop
       );
     }
   }, [followers, session]);
+  const isCurrentUser = (session as CustomSession)?.user?.id === _id;
   const isCurrentUserPage =
     router.query?.id === (session as CustomSession)?.user?.id;
   const handleAction = useCallback(async () => {
@@ -139,6 +140,7 @@ function UserCard({ _id, displayName, username, profileImgUrl, followers }: Prop
           )}
         </Link>
       </div>
+      {!isCurrentUser && (
       <Button
         variant={"outline"}
         onClick={handleAction}
@@ -147,6 +149,7 @@ function UserCard({ _id, displayName, username, profileImgUrl, followers }: Prop
       >
         {isFollowing ? "Unfollow" : "Follow"}
       </Button>
+      )}
     </article>
   );
 }

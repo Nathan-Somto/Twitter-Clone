@@ -83,34 +83,26 @@ const get_tweet = async (tweetId: Types.ObjectId, userId: Types.ObjectId) => {
         notFound: true,
       };
     }
-    if (!tweet.isPublic) {
-      const user = await User.findById(userId).select("following");
+    
+      const user = await User.findById(userId).select("followers");
       if (!user)
+      {
         return {
           status: "failed",
           message: "User not found",
-          notFound: true
-        };
-      if (!user.following.includes(tweet.author._id)) {
-        return {
-          status: "failed",
-          noAccess: true,
-          message:
-            "you cannot read this tweet because it is private consider following the user to gain access.",
-        };
-      } else {
-        return {
-          status: "success",
-          tweet,
+          noAcess: true,
+          tweet: null,
+          followers:null
         };
       }
-    } else {
+      // handling of private tweets will be done by the client
       return {
         status: "success",
         tweet,
+        followers: user.followers
       };
     }
-  } catch (err) {
+   catch (err) {
     if(err instanceof Error){
       console.error(err.message);
     }

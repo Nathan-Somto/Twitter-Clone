@@ -1,10 +1,10 @@
 import TweetCard from "@/components/card/TweetCard";
-import Layout from "@/components/layout";
+import {RootLayout} from "@/components/layout";
 import React, { useEffect } from "react";
 import Header from "@/components/common/Header";
 import CommentCard from "@/components/card/CommentCard";
 import CommentBox from "@/components/form/CommentBox";
-import { GetServerSideProps } from "next";
+import type { GetServerSideProps } from "next";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../api/auth/[...nextauth]";
 import { CustomSession } from "@/types";
@@ -35,7 +35,7 @@ export const getServerSideProps: GetServerSideProps = async ({
         },
       };
     }
-    if (!((session as CustomSession)?.user?.onBoarded)){
+    if (!(session as CustomSession)?.user?.onBoarded) {
       return {
         redirect: {
           destination: "/onboarding",
@@ -43,8 +43,10 @@ export const getServerSideProps: GetServerSideProps = async ({
         },
       };
     }
-    const response = await axios.get(`${process.env.SITE_URL}/api/users/${query.userId}/tweet/${query.id}`)
-    console.log(response.data);
+    const response = await axios.get(
+      `${process.env.SITE_URL}/api/users/${query.userId}/tweet/${query.id}`
+    );
+    console.log("tweet data: ",response.data);
     if (response.data?.notFound) {
       return {
         notFound: true,
@@ -57,6 +59,21 @@ export const getServerSideProps: GetServerSideProps = async ({
           permanent: false,
         },
       };
+    }
+    // if the tweet is private
+    if(!response.data?.tweet?.isPublic){
+      // if the tweet is not the requesting user's tweet
+      if(response.data.tweet.author._id !== (session as CustomSession)?.user?.id){
+      // if the user is not following the author of the private tweet
+        if(!response.data.followers.includes((session as CustomSession)?.user?.id)){
+          return {
+            redirect: {
+              destination: "/home",
+              permanent: false,
+            },
+          };
+        }
+      }
     }
     return {
       props: {
@@ -80,20 +97,20 @@ function TweetPage({ tweet }: Props) {
   const dispatch = useDispatch();
   const tweetData = useSelector(selectTweet);
   useEffect(() => {
-    console.log(tweet);
     dispatch(setTweets([tweet]));
   }, [dispatch, tweet]);
-  const seoData = !Array.isArray(tweetData) || tweetData.length
-    ? {
-        username: tweetData[0].author.username,
-        text: tweetData[0].text,
-      }
-    : { username: "", text: "" };
+  const seoData =
+    !Array.isArray(tweetData) || tweetData.length
+      ? {
+          username: tweetData[0].author.username,
+          text: tweetData[0].text,
+        }
+      : { username: "", text: "" };
   return (
     <>
       <Seo title={`@${seoData.username + " on "} X : '${seoData.text}'`} />
-      <Layout>
-        <div className="h-screen overflow-auto border-r dark:border-r-dark4">
+      <RootLayout>
+        <div>
           {!Array.isArray(tweetData) || tweetData.length ? (
             <>
               <Header
@@ -110,18 +127,20 @@ function TweetPage({ tweet }: Props) {
                   ))
                 ) : (
                   <div>
-                    <h3>No Comments for Tweet</h3>
+                    <h3 className="mt-3 text-2xl font-semibold">
+                      No Comments for Tweet
+                    </h3>
                   </div>
                 ))}
             </>
           ) : (
             <div>
               {" "}
-              <h3>Could not Fetch Tweet </h3>
+              <h3 className="mt-3 text-2xl font-semibold">No Tweet Found!</h3>
             </div>
           )}
         </div>
-      </Layout>
+      </RootLayout>
     </>
   );
 }

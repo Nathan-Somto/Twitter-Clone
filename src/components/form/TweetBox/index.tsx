@@ -11,20 +11,27 @@ import TweetValidation from "@/lib/validations/tweet";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useForm } from "react-hook-form";
-import React, { useState, useRef, ChangeEvent,useCallback, useTransition } from "react";
+import React, {
+  useState,
+  useRef,
+  ChangeEvent,
+  useCallback,
+  useTransition,
+  memo,
+} from "react";
 import dynamic from "next/dynamic";
 import { EmojiClickData, EmojiStyle } from "emoji-picker-react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { CustomSession } from "@/types";
 import { toast } from "@/components/ui/use-toast";
-import { uploadFiles } from "@/utils";
+import { uploadFiles, cn } from "@/utils";
 import axios from "axios";
 import Loader from "@/components/ui/loader";
 import { useDispatch } from "react-redux";
 import { Tweet, addNewTweet } from "@/features/tweets/tweetsSlice";
-import {useRouter} from 'next/router';
-
+import { useRouter } from "next/router";
+import { type Props as EmojiPickerProps } from "emoji-picker-react";
 // to avoid server rendering
 const EmojiPicker = dynamic(
   () => {
@@ -32,19 +39,25 @@ const EmojiPicker = dynamic(
   },
   { ssr: false }
 );
-
+// to ensure that only when the  props passed to emoji picker change, a re-render occurs.
+const MemoEmojiPicker: React.NamedExoticComponent<EmojiPickerProps> = memo(
+  function EmojiPickerComp({ ...Props }: EmojiPickerProps) {
+    return <EmojiPicker {...Props} />;
+  }
+);
 
 type Props = {
-  toggleModal?:() => void
-}
-function TweetBox({toggleModal}:Props) {
+  toggleModal?: () => void;
+};
+function TweetBox({ toggleModal }: Props) {
   const router = useRouter();
   const dispatch = useDispatch();
   const { data: session } = useSession();
-  const [isPending, startTransition] = useTransition()
+  const [isPending, startTransition] = useTransition();
   const [showEmojiPicker, setEmojiPicker] = useState<boolean>(false);
-  const [status, setStatus] = useState<string>('Everyone');
-  const [emojiPickerObject, setEmojiPickerObject] = useState<EmojiClickData | null>(null);
+  const [status, setStatus] = useState<string>("Everyone");
+  const [emojiPickerObject, setEmojiPickerObject] =
+    useState<EmojiClickData | null>(null);
   const [imgUrl, setImgUrl] = useState<string>("");
   const [imgFile, setImgFile] = useState<File[]>([]);
   const imgRef = useRef<HTMLInputElement | null>(null);
@@ -52,107 +65,111 @@ function TweetBox({toggleModal}:Props) {
   const form = useForm<z.infer<typeof TweetValidation>>({
     resolver: zodResolver(TweetValidation),
     defaultValues: {
-      text: '',
+      text: "",
       author: (session as CustomSession)?.user?.id ?? "1234",
       isPublic: true,
       isRetweet: false,
       imgUrls: [],
     },
   });
-   
- const disableButton = form.getValues('text').length < 3 || isLoading;
-  const onSubmit = useCallback(async (values: z.infer<typeof TweetValidation>) => {
-    setIsLoading(true);
-    try {
-      // modify isPublic based on user selection.
-      values.isPublic = status === "Everyone";
-      // check if user is logged in
-      if (!(session as CustomSession)?.user?.id || values.author === "1234") {
-        throw new Error("The User must be logged in before you can tweet.");
-      }
-      // upload image to uploadthing if there is.
-      let uploadedImgUrl = "";
-      if (imgFile.length) {
-        const uploadedResponse = await uploadFiles({
-          endpoint: "imageUploader",
-          files: imgFile,
-        });
-        uploadedImgUrl = uploadedResponse[0].url;
-      }
-      // get image url.
-      if (uploadedImgUrl) {
-        values.imgUrls.push(uploadedImgUrl);
-      }
-      // update the db.
-      const response = await axios.post(
-        `/api/users/${(session as CustomSession)?.user?.id}/tweet`,
-        values
-      );
-      console.log(response.data);
-      // check if successfull
-      if (response.data?.status === "failed") {
-        throw new Error("Internal Server Error");
-      }
-      if (response.data?.issues) {
-        throw new Error("Poorly formatted data.");
-      }
+
+  const disableButton = form.getValues("text").length < 3 || isLoading;
+  const onSubmit = useCallback(
+    async (values: z.infer<typeof TweetValidation>) => {
+      setIsLoading(true);
+      try {
+        // modify isPublic based on user selection.
+        values.isPublic = status === "Everyone";
+        // check if user is logged in
+        if (!(session as CustomSession)?.user?.id || values.author === "1234") {
+          throw new Error("The User must be logged in before you can tweet.");
+        }
+        // upload image to uploadthing if there is.
+        let uploadedImgUrl = "";
+        if (imgFile.length) {
+          const uploadedResponse = await uploadFiles({
+            endpoint: "imageUploader",
+            files: imgFile,
+          });
+          uploadedImgUrl = uploadedResponse[0].url;
+        }
+        // get image url.
+        if (uploadedImgUrl) {
+          values.imgUrls.push(uploadedImgUrl);
+        }
+        // update the db.
+        const response = await axios.post(
+          `/api/users/${(session as CustomSession)?.user?.id}/tweet`,
+          values
+        );
+        // check if successfull
+        if (response.data?.status === "failed") {
+          throw new Error("Internal Server Error");
+        }
+        if (response.data?.issues) {
+          throw new Error("Your Tweet was not accepted by X");
+        }
 
         // get the newly created tweet add to the tweet state, if it is the home page or the user profile page.
-        if(router.pathname === '/home' || router.pathname === `/profile/${(session as CustomSession)?.user?.id}`){
-          dispatch(addNewTweet(response.data.tweet as unknown as Tweet))
+        if (
+          router.pathname === "/home" ||
+          router.pathname === `/profile/${(session as CustomSession)?.user?.id}`
+        ) {
+          dispatch(addNewTweet(response.data.tweet as unknown as Tweet));
         }
         toast({
-          description:"Successfully Created Tweet.",
-        })
+          description: "Successfully Created Tweet.",
+        });
         // when we have succeeded with everything reset.
         form.reset();
-        if(imgUrl){
-          setImgUrl('');
+        if (imgUrl) {
+          setImgUrl("");
           setImgFile([]);
         }
         // if it is being displayed on a modal close it.
-        if(toggleModal){
+        if (toggleModal) {
           toggleModal();
         }
-    } catch (err) {
-      if (err instanceof Error) {
-        toast({
-          title: "Failed to Create Tweet",
-          description: err.message,
-          variant:"destructive"
-        });
+      } catch (err) {
+        if (err instanceof Error) {
+          toast({
+            title: "Failed to Create Tweet",
+            description: err.message,
+            variant: "destructive",
+          });
+        }
+      } finally {
+        setIsLoading(false);
       }
-    }
-    finally{
-    setIsLoading(false);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[dispatch, imgFile, session, status]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    },
+    [dispatch, imgFile, session, status]
+  );
   function handleEmojiClick(emojiDataObj: EmojiClickData, _: MouseEvent) {
     // append emoji to text area value.
-    const updatedValue = form.getValues('text') + emojiDataObj.emoji;
+    const updatedValue = form.getValues("text") + emojiDataObj.emoji;
     setEmojiPickerObject(emojiDataObj);
-    form.setValue('text', updatedValue);
+    form.setValue("text", updatedValue);
   }
   function toggleEmojiPicker() {
     // toggle emoji appearance
     startTransition(() => {
       setEmojiPicker((prevState) => !prevState);
-    })
+    });
   }
   function handleImageSelect(
     e: ChangeEvent<HTMLInputElement> & { files: FileList }
   ) {
-    if (e.target.files && e.target.files.length){;
-    const fileReader = new FileReader();
-    fileReader.onload = function (fileEvt) {
-      setImgUrl(fileEvt.target?.result as string);
-    };
-    const file  = Array.from(e.target.files)
-    setImgFile(file);
-    fileReader.readAsDataURL(e.target.files[0]);
+    if (e.target.files && e.target.files.length) {
+      const fileReader = new FileReader();
+      fileReader.onload = function (fileEvt) {
+        setImgUrl(fileEvt.target?.result as string);
+      };
+      const file = Array.from(e.target.files);
+      setImgFile(file);
+      fileReader.readAsDataURL(e.target.files[0]);
+    }
   }
-}
   function clickFileInput() {
     if (imgRef.current !== null) {
       imgRef.current.click();
@@ -360,21 +377,26 @@ function TweetBox({toggleModal}:Props) {
               </svg>
             </button>
           </div>
-          <Button type="submit" disabled={disableButton} className="w-[77px] h-[39px]">
-           <>
-           {isLoading ? (<Loader size="sm"/>): ('Tweet')}
-           </>
+          <Button
+            type="submit"
+            disabled={disableButton}
+            className="w-[77px] h-[39px]"
+          >
+            <>{isLoading ? <Loader size="sm" /> : "Tweet"}</>
           </Button>
         </div>
-        {showEmojiPicker && (
-          <div className="absolute bottom-[-360px] z-[50]">
-            <EmojiPicker
-              emojiStyle={EmojiStyle.TWITTER}
-              onEmojiClick={handleEmojiClick}
-              height={350}
-            />
-          </div>
-        )}
+        <div
+          className={cn(
+            "absolute bottom-[-360px] z-[50]",
+            !showEmojiPicker && "hidden"
+          )}
+        >
+          <MemoEmojiPicker
+            emojiStyle={EmojiStyle.TWITTER}
+            onEmojiClick={handleEmojiClick}
+            height={350}
+          />
+        </div>
         <input
           type="file"
           ref={imgRef}

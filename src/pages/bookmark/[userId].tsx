@@ -1,12 +1,11 @@
 import TweetCard from "@/components/card/TweetCard";
 import Header from "@/components/common/Header";
-import Layout from "@/components/layout";
 import Seo from "@/components/seo";
 import { Button } from "@/components/ui/button";
 import { Tweet, selectTweets, setTweets } from "@/features/tweets/tweetsSlice";
 import { CustomSession } from "@/types";
 import axios from "axios";
-import { GetServerSideProps } from "next";
+import type { GetServerSideProps } from "next";
 import { getServerSession } from "next-auth";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
@@ -14,6 +13,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { authOptions } from "../api/auth/[...nextauth]";
 import { toast } from "@/components/ui/use-toast";
+import { RootLayout } from "@/components/layout";
 export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
   try {
     const session = await getServerSession(req, res, authOptions);
@@ -78,29 +78,29 @@ export default function BookmarkPage({ bookmarks }: Props) {
   }, [dispatch, bookmarks]);
   // handles the deletion of all user bookmarks.
   async function handleBookmarksClear() {
-        setDisableBtn(true);
+    setDisableBtn(true);
     try {
-        const response = await axios.delete(`/api/users/${(session as CustomSession)?.user?.id}/bookmarks`);
-        if(response.data?.status === 'success'){
-            dispatch(setTweets([]));
-            toast({
-                description: "Successfully cleared user bookmarks"
-            })
-        }
-        else {
-            throw new Error(response.data);
-        }
+      const response = await axios.delete(
+        `/api/users/${(session as CustomSession)?.user?.id}/bookmarks`
+      );
+      if (response.data?.status === "success") {
+        dispatch(setTweets([]));
+        toast({
+          description: "Successfully cleared user bookmarks",
+        });
+      } else {
+        throw new Error(response.data);
+      }
     } catch (err) {
-        if(err instanceof Error){
-            console.error(err.message);
-            toast({
-                description: 'Failed to clear user bookmarks',
-                variant: 'destructive'
-            })
-        }
-    }
-    finally{
-        setDisableBtn(false);
+      if (err instanceof Error) {
+        console.error(err.message);
+        toast({
+          description: "Failed to clear user bookmarks",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setDisableBtn(false);
     }
   }
   return (
@@ -108,8 +108,8 @@ export default function BookmarkPage({ bookmarks }: Props) {
       <Seo
         title={`Bookmarks @${(session as CustomSession)?.user?.username} on X`}
       />
-      <Layout>
-        <div className=" h-screen overflow-auto border-r dark:border-r-dark4">
+      <RootLayout>
+        <div>
           <section>
             <Header
               titleText="Bookmarks"
@@ -127,7 +127,7 @@ export default function BookmarkPage({ bookmarks }: Props) {
               Clear all Bookmarks
             </Button>
           </section>
-          <section className="border-t dark:border-t-dark4 pb-[75px] md:pb-0">
+          <section className="border-t dark:border-t-dark4">
             {tweets.map((tweet, index) => (
               <TweetCard
                 {...tweet}
@@ -155,7 +155,7 @@ export default function BookmarkPage({ bookmarks }: Props) {
             )}
           </section>
         </div>
-      </Layout>
+      </RootLayout>
     </>
   );
 }

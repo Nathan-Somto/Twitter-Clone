@@ -26,12 +26,19 @@ import {
 import { toast } from "@/components/ui/use-toast";
 import Loader from "@/components/ui/loader";
 
-type Props = {
-  forComment?: boolean;
-  forReply?: boolean;
-  tweetId?: string;
-  commentId?: string;
-};
+type Props =
+  | {
+      forComment: true;
+      forReply?: never;
+      tweetId: string;
+      commentId?: never;
+    }
+  | {
+      forReply: true;
+      forComment?: never;
+      tweetId: string;
+      commentId: string;
+    };
 
 function CommentBox({ tweetId, commentId, forReply, forComment }: Props) {
   const { data: session } = useSession();
@@ -40,27 +47,19 @@ function CommentBox({ tweetId, commentId, forReply, forComment }: Props) {
   const onSubmit = async (values: z.infer<typeof CommentValidation>) => {
     setLoading(true);
     try {
-      console.log(values);
+      const response = await axios.post(`/api/comment`, values);
+      console.log(response.data);
+      if (response.data?.status !== "success") {
+        throw new Error(response.data);
+      }
       if (forReply) {
-        const response = await axios.post(
-          `/api/comment/${commentId}/replies`,
-          values
-        );
-        console.log(response.data)
-        if (response.data?.status !== "success") {
-          throw new Error(response.data);
-        }
         dispatch(
           addReplyToComment({
-            comment_id: commentId ?? "",
+            comment_id: commentId,
             reply: response.data.reply as Replies,
           })
         );
       } else {
-        const response = await axios.post(`/api/comment`, values);
-        if (response.data?.status !== "success") {
-          throw new Error(response.data);
-        }
         dispatch(addCommentToTweet(response.data.comment as Comment));
       }
       toast({
@@ -68,6 +67,7 @@ function CommentBox({ tweetId, commentId, forReply, forComment }: Props) {
           forReply ? "comment" : "tweet"
         }.`,
       });
+      form.reset();
     } catch (err) {
       if (err instanceof Error) {
         console.error(err.message);
@@ -80,10 +80,7 @@ function CommentBox({ tweetId, commentId, forReply, forComment }: Props) {
       });
     } finally {
       setLoading(false);
-      form.reset();
     }
-    // if for comment call the ednpoint for adding comment to tweet.
-    console.log(values);
   };
   const form = useForm<z.infer<typeof CommentValidation>>({
     resolver: zodResolver(CommentValidation),
@@ -91,7 +88,7 @@ function CommentBox({ tweetId, commentId, forReply, forComment }: Props) {
       text: "",
       author: (session as CustomSession)?.user?.id ?? "",
       tweetId: tweetId ?? "",
-      parentComment: commentId ?? "",
+      parentComment: commentId ?? void 0,
     },
   });
   return (
