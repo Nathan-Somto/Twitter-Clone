@@ -12,7 +12,9 @@ import {
   setTweets,
 } from "@/features/tweets/tweetsSlice";
 import { selectUser } from "@/features/users/usersSlice";
+import { CustomSession } from "@/types";
 import axios from "axios";
+import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -23,6 +25,7 @@ export default function UserTweets() {
   const tweets = useSelector(selectTweets);
   const selectedFilter = useSelector(selectFilter);
   const dispatch = useDispatch();
+  const { data: session } = useSession();
   // filtering logic for profile page.
   const filteredTweets = useCallback(
     (tweetsState: TweetState, selectedFilter: filterType) => {
@@ -48,12 +51,28 @@ export default function UserTweets() {
   // call a useEffect on first mount to fetch the tweets.
   useEffect(() => {
     async function getUserTweets() {
-      setLoading(true);
       try {
-        const response = await axios.get(`/api/users/${user._id}/tweet`);
+        const response = await axios.get(`/api/users/${user._id}?q=tweets`);
         console.log(response.data);
         if (response.data?.status === "success") {
-          dispatch(setTweets(response.data.tweets as unknown as Tweet[]));
+          const accessibleTweets = (
+            response.data.tweets as unknown as Tweet[]
+          ).filter((tweet) => {
+            if (tweet.isPublic) {
+              return tweet;
+            }
+            if (
+              !tweet.isPublic &&
+              ((user._id !== (session as unknown as CustomSession)?.user?.id ??
+                "") ||
+                user.followers.includes(user._id))
+            ) {
+              return tweet;
+            }
+          });
+          dispatch(setTweets(accessibleTweets));
+        } else {
+          dispatch(setTweets([]));
         }
       } catch (err) {
         console.error(err);
@@ -65,6 +84,7 @@ export default function UserTweets() {
         setLoading(false);
       }
     }
+    setLoading(true);
     if (user?._id && user._id !== "1234") {
       getUserTweets();
     }

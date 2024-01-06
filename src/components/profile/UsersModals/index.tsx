@@ -4,7 +4,6 @@ import {
   DialogHeader,
   DialogContent,
   DialogTitle,
-  DialogDescription 
 } from "@/components/ui/dialog";
 import Loader from "@/components/ui/loader";
 import { toast } from "@/components/ui/use-toast";
@@ -28,25 +27,24 @@ type Props =
     };
 type UserList = {
   _id: string;
-  name: string;
+  displayName: string;
   username: string;
   profileImgUrl: string;
   actionType: "Follow";
   followers: string[];
 };
-function UsersModal({ forFollowers, forFollowing, openModal,toggleModal }: Props) {
+function UsersModal({ forFollowers,openModal,toggleModal }: Props) {
   const [userList, setUserList] = useState<UserList[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const user = useSelector(selectUser);
   useEffect(() => {
     async function getUsers() {
-        setLoading(true)
       try {
         let response;
-        if (forFollowers) {
-          response = await axios.get(`/api/users/${user._id}/followers`);
+        if (!!forFollowers) {
+          response = await axios.get(`/api/users/${user._id}?q=followers`);
         } else {
-          response = await axios.get(`/api/users/${user._id}/following`);
+          response = await axios.get(`/api/users/${user._id}?q=following`);
         }
 
         if (response.data?.status === "success") {
@@ -69,6 +67,7 @@ function UsersModal({ forFollowers, forFollowing, openModal,toggleModal }: Props
         setLoading(false);
       }
     }
+    setLoading(true)
     if(openModal){
         getUsers();
     }
